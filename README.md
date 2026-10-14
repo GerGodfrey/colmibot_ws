@@ -10,7 +10,7 @@ En esta actividad se implementó la comunicación entre un control de videojuego
 
 ### Funcionamiento
 - **Tópicos utilizados:** 
-  - `/joy`: Recibe el estado del control mediante el mensaje `sensor_msgs/msg/Joy`.
+  - `/joy`: Recibe el estado del control mediante el mensaje `sensor_msgs/msg/Joy`. Utilizamos el arreglo de AXES, específicamente los índices 3 y 4 para los ejes X y Y del joystick elegido.
   - `/turtle1/cmd_vel`: Publica comandos de movimiento a la tortuga mediante el mensaje `geometry_msgs/msg/Twist`.
 
 - **Nodos involucrados:**
@@ -25,8 +25,10 @@ ros2 launch colmibotbasics play_station_turtle_controller.launch.py
 ```
 
 ### Problemas encontrados
-**Problema**: 
+**Problema**: La computadora no reconocía el control de Play Station.
 
-**Solucion**: 
+**Solucion**: Cambiar de cable mini usb. Identificar uno que fuera de datos, no solo de carga.
 
 ### Video de funcionamiento
+https://drive.google.com/file/d/1xeWZEY9VAiEY9kjB-hVeuJiEwnarTBqq/view?usp=sharing
+
