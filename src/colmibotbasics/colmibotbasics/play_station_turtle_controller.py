@@ -3,12 +3,16 @@ from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 
-AXIS_X = 3
-AXIS_Y = 4
+# Indices de los ejes analogicos del control (MODELO)
+AXIS_X = 3  # Eje para la velocidad angular (giro)
+AXIS_Y = 4  # Eje para la velocidad lineal (avance/reversa)
 
+# Factores de escala para limitar la velocidad maxima
 MAX_LINEAR = 2.0
 MAX_ANGULAR = 2.0
 
+#Este nodo se suscribe al topico /joy y recibe mensajes Joy, a su vez manda mesajes Twist por medio del topico 
+#/turtle1/cmd_vel
 class PlayStationTurtleController(Node):
     def __init__(self):
         super().__init__('play_station_turtle_controller')
@@ -27,13 +31,17 @@ class PlayStationTurtleController(Node):
         )
         
         self.get_logger().info('Play station turtle controller ha iniciado')
-        
+
+    
     def ps_joystick_callback(self, msg):
+        #Creacion del mensaje
         twist = Twist()
-        
+
+        # Se toma la posicion de los joysticks (valores entre -1.0 y 1.0)
         x = msg.axes[AXIS_X]
         y = msg.axes[AXIS_Y]
-        
+
+        # Se escalan lecturas multiplicando por la velocidad
         twist.linear.x = y * MAX_LINEAR
         twist.angular.z = x * MAX_ANGULAR
             
