@@ -17,6 +17,7 @@ class PlayStationTurtleController(Node):
     def __init__(self):
         super().__init__('play_station_turtle_controller')
         
+        # Suscripción al nodo joy para leer los valores que manda el control (joy_node) en el tópico joy
         self.subscription_ = self.create_subscription(
             Joy,
             '/joy',
@@ -24,6 +25,7 @@ class PlayStationTurtleController(Node):
             10
         )
         
+        # Publica mensajes de tipo twist en cmd_vel para modificar la posición de la tortuga
         self.publisher_ = self.create_publisher(
             Twist,
             '/turtle1/cmd_vel',
