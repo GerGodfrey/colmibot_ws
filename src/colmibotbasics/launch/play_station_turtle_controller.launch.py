@@ -3,6 +3,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
+    #El archivo sirve para ejecutar los nodos en una sola terminal
     return LaunchDescription([
 
         Node(
