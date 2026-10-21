@@ -1,4 +1,3 @@
-# Proyecto final
 **Autores:** 
 - Elena Sofía Luna Palacio
 - Luis Gerardo Godfrey Castañeda
@@ -71,6 +70,10 @@ source install/setup.bash
 Y, por último, para ejecutar el modelo de ROS2:
 ```
 ros2 launch robot_description display.launch.py
+```
+Si aparece vacía la visualización, usar el siguiente comando:
+```
+LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_description display.launch.py
 ```
 
 ### Problemas, soluciones y limitaciones
