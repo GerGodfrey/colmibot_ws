@@ -81,6 +81,7 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_description display.launch.py
 - Como SolidWorks no es nativo de MacOS, primero se intentó crear el archivo URDF desde CAD Oneshape. Sin embargo, una limitación de este es que los *mates* no se importan directamente. Por lo tanto, se decidió usar una máquina con Windows y SolidWorks.
 - Una simplificación que se le hizo al robot fue mantener todos los elementos fijos excepto por las dos ruedas principales. Esto inlcuye a las "ruedas locas" para poder enforcarnos en un solo tipo de movimiento.
 - Se buscó solo representar la geometría del robot, no necesariamente cómo se movería y su relación con el motor (un desplazamiento físico).
+- Se quitaron muchos de los elementos electrónicos que para la visualización no eran necesarios, dejando solo la estuctura general.
 
 ### Link al video
 https://itam2-my.sharepoint.com/personal/tania_dominguez_itam_mx/_layouts/15/stream.aspx?id=%2Fpersonal%2Ftania%5Fdominguez%5Fitam%5Fmx%2FDocuments%2F1%20ITAM%2F11vo%20semestre%2FSeminario%20de%20Titulaci%C3%B3n%2FactividadROSSolid%2FVideoROS%2DSolid%2Emp4&ga=1&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2E2aafc7c3%2Df40c%2D48a9%2Da409%2Da97c622bbd1a
