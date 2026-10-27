@@ -1172,7 +1172,7 @@
     <origin xyz="-0.0001598794074 -0.006505466002 0.06138907051" rpy="-4.10206857e-10 -1.570796327 4.10206857e-10" />
     <parent link="Motorreductor_37D_con_encoder_1" />
     <child link="CLM_Llanta60mmD_2" />
-    <axis xyz="1 0 0" />
+    <axis xyz="-1 0 0" />
     <!-- mates: COINCIDENT, CONCENTRIC, COINCIDENT, CONCENTRIC -->
     <!-- sw2robot-note: geo: free rotation about mate axis (1 DOF); config sets continuous (inference said revolute) -->
   </joint>
@@ -1180,7 +1180,7 @@
     <origin xyz="-0.0001598794074 -0.006505466002 0.06138907051" rpy="3.141592654 1.570796327 3.141592654" />
     <parent link="Motorreductor_37D_con_encoder_2" />
     <child link="CLM_Llanta60mmD_1" />
-    <axis xyz="1 0 0" />
+    <axis xyz="-1 0 0" />
     <!-- mates: COINCIDENT, CONCENTRIC, COINCIDENT, CONCENTRIC -->
     <!-- sw2robot-note: geo: free rotation about mate axis (1 DOF); config sets continuous (inference said revolute) -->
   </joint>
@@ -1498,4 +1498,31 @@
     <parent link="base_link" />
     <child link="CLM_PI5_CaseTop_1" />
   </joint>
+
+    <!-- ================= GAZEBO (RViz ignora todo lo de abajo) ================= -->
+  <gazebo reference="CLM_Llanta60mmD_1"><mu1>1.0</mu1><mu2>1.0</mu2></gazebo>
+  <gazebo reference="CLM_Llanta60mmD_2"><mu1>1.0</mu1><mu2>1.0</mu2></gazebo>
+  <gazebo reference="CLM_RuedaLoca_1"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+  <gazebo reference="CLM_RuedaLoca_2"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>Motorreductor_37D_con_encoder_2__CLM_Llanta60mmD_1</left_joint>
+      <right_joint>Motorreductor_37D_con_encoder_1__CLM_Llanta60mmD_2</right_joint>
+      <wheel_separation>0.174</wheel_separation>
+      <wheel_radius>0.03</wheel_radius>
+      <max_linear_velocity>0.5</max_linear_velocity>
+      <max_angular_velocity>3.0</max_angular_velocity>
+      <topic>/cmd_vel</topic>
+      <odom_topic>/odom</odom_topic>
+      <tf_topic>/tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_link</child_frame_id>
+      <odom_publish_frequency>30</odom_publish_frequency>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/joint_states</topic>
+    </plugin>
+  </gazebo>
+
 </robot>
