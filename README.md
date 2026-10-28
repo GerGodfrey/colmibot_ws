@@ -229,4 +229,4 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 - Para usar el control dentro de la VM es necesario conectarlo a la máquina virtual (en VirtualBox: *Devices → USB*).
 
 ### Link al video
-_Pendiente_
+https://drive.google.com/file/d/1B5EPVo7lPgZjOoeS3nwbClFNNKDlH67F/view?usp=sharing
