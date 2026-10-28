@@ -1,0 +1,1216 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="robot_description">
+  <link name="base_link">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Base_2.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.908413615e-05 5.50980745e-09 0.001500000077" rpy="0 0 0" />
+      <mass value="0.0718697" />
+      <inertia ixx="0.000145322" ixy="-1.14171e-15" ixz="-4.88455e-10" iyy="0.000184181" iyz="5.33402e-10" izz="0.000329396" />
+    </inertial>
+  <visual><geometry><box size="0.18 0.12 0.02" /></geometry></visual></link>
+  <link name="CLM_BaseCam_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_BaseCam_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.118394455e-08 -0.0001307040219 0" rpy="0 0 0" />
+      <mass value="0.0245314" />
+      <inertia ixx="3.60964e-06" ixy="-8.01577e-13" ixz="-1.40068e-12" iyy="1.41837e-05" iyz="4.9937e-22" izz="1.12133e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_BracketsPololu37D_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_BracketsPololu37D_2.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-1.229347581e-07 -0.0009552704931 -0.003289425863" rpy="0 0 0" />
+      <mass value="0.0130055" />
+      <inertia ixx="4.82746e-06" ixy="-2.27967e-11" ixz="-1.99364e-11" iyy="6.64297e-06" iyz="8.73432e-07" izz="4.29674e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_BracketsPololu37D_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_BracketsPololu37D_2.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-1.229347581e-07 -0.0009552704931 -0.003289425863" rpy="0 0 0" />
+      <mass value="0.0130055" />
+      <inertia ixx="4.82746e-06" ixy="-2.27967e-11" ixz="-1.99364e-11" iyy="6.64297e-06" iyz="8.73432e-07" izz="4.29674e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_Cytron_MDD10A_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Cytron_MDD10A_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.001403368801 -4.453873243e-05 1.790754561e-05" rpy="0 0 0" />
+      <mass value="0.036684" />
+      <inertia ixx="9.68759e-06" ixy="-6.30263e-07" ixz="-1.13029e-07" iyy="3.16258e-05" iyz="1.21833e-08" izz="2.2265e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_ESP32_Wroom_30pins_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_ESP32_Wroom_30pins_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.896520113e-05 -0.0009912392517 -0.002514469103" rpy="0 0 0" />
+      <mass value="0.0161964" />
+      <inertia ixx="3.21402e-06" ixy="-6.33748e-11" ixz="1.98249e-11" iyy="1.16051e-06" iyz="3.29993e-08" izz="3.95796e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_ExpansionBoardESP32_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_ExpansionBoardESP32_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.001145785394 -0.0003735666964 -0.001273969077" rpy="0 0 0" />
+      <mass value="0.0248009" />
+      <inertia ixx="9.82747e-06" ixy="-1.47853e-07" ixz="9.13868e-07" iyy="1.53472e-05" iyz="-2.0841e-07" izz="5.87412e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_Holder18650_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Holder18650_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.002991377018 -0.001948273555 -1.306838419e-06" rpy="0 0 0" />
+      <mass value="0.0109858" />
+      <inertia ixx="1.14515e-05" ixy="1.70765e-06" ixz="-2.52785e-10" iyy="1.52678e-05" iyz="-1.78536e-10" izz="7.09341e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_Holder3TOF_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Holder3TOF_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001778758162 -9.422542457e-05 2.265875269e-05" rpy="0 0 0" />
+      <mass value="0.013446" />
+      <inertia ixx="2.03897e-05" ixy="-2.63227e-08" ixz="-8.33888e-08" iyy="2.53082e-06" iyz="1.40057e-08" izz="1.92047e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_IMU_BMI270_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_IMU_BMI270_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.876747192e-05 -0.0002288321642 -0.0001694500321" rpy="0 0 0" />
+      <mass value="0.00301234" />
+      <inertia ixx="1.28645e-07" ixy="-1.95216e-09" ixz="1.12138e-09" iyy="8.68279e-08" iyz="-8.92005e-09" izz="1.5766e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_KCD1_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_KCD1_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-1.064965525e-05 -0.0009641535774 -0.0001309391736" rpy="0 0 0" />
+      <mass value="0.00546156" />
+      <inertia ixx="3.06169e-07" ixy="-9.34954e-11" ixz="-4.07466e-12" iyy="2.3791e-07" iyz="-8.39421e-09" izz="2.79613e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_KCD1_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_KCD1_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-1.064965525e-05 -0.0009641535774 -0.0001309391736" rpy="0 0 0" />
+      <mass value="0.00546156" />
+      <inertia ixx="3.06169e-07" ixy="-9.34954e-11" ixz="-4.07466e-12" iyy="2.3791e-07" iyz="-8.39421e-09" izz="2.79613e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_Llanta60mmD_1">
+    
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Llanta60mmD_1.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Llanta60mmD_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.004177249781 3.083362116e-06 5.290780843e-08" rpy="0 0 0" />
+      <mass value="0.0193581" />
+      <inertia ixx="9.11427e-06" ixy="1.08796e-10" ixz="1.8664e-12" iyy="4.67539e-06" iyz="-2.57785e-12" izz="4.67554e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_Llanta60mmD_2">
+    
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Llanta60mmD_1_2.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Llanta60mmD_1_2.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.004177249781 3.083816008e-06 -6.829256566e-15" rpy="0 0 0" />
+      <mass value="0.0193581" />
+      <inertia ixx="9.11427e-06" ixy="-1.08812e-10" ixz="-4.54178e-16" iyy="4.67539e-06" iyz="2.11737e-18" izz="4.67554e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_PI5_CaseBase_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PI5_CaseBase_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0002097579983 -0.001842668993 -0.0002528927501" rpy="0 0 0" />
+      <mass value="0.0168026" />
+      <inertia ixx="1.31123e-05" ixy="6.17807e-08" ixz="3.12679e-08" iyy="6.39779e-06" iyz="1.70967e-08" izz="1.93893e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_PI5_CaseTop_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PI5_CaseTop_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.002588958637 -0.001356951504 -0.001450555101" rpy="0 0 0" />
+      <mass value="0.0413304" />
+      <inertia ixx="2.67574e-05" ixy="7.53867e-09" ixz="6.91558e-10" iyy="1.22301e-05" iyz="4.9178e-08" izz="3.85701e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_PisoCam_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PisoCam_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.531783807e-05 0 -3.288351194e-06" rpy="0 0 0" />
+      <mass value="0.0957163" />
+      <inertia ixx="0.000239471" ixy="-1.56512e-24" ixz="4.93827e-23" iyy="0.000479309" iyz="2.47185e-25" izz="0.000239982" />
+    </inertial>
+  </link>
+  <link name="CLM_Plato_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Plato_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0002532910598 1.661443414e-05 -0.003476171074" rpy="0 0 0" />
+      <mass value="0.0822539" />
+      <inertia ixx="0.000213743" ixy="-8.61348e-09" ixz="-2.44984e-06" iyy="0.000436832" iyz="-2.81646e-07" izz="0.000223208" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x15_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x15_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.000894601" />
+      <inertia ixx="2.11609e-08" ixy="5.79011e-24" ixz="-4.11838e-25" iyy="2.11609e-08" iyz="-1.48352e-24" izz="8.77419e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x15_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x15_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.000894601" />
+      <inertia ixx="2.11609e-08" ixy="5.79011e-24" ixz="-4.11838e-25" iyy="2.11609e-08" iyz="-1.48352e-24" izz="8.77419e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x15_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x15_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.000894601" />
+      <inertia ixx="2.11609e-08" ixy="5.79011e-24" ixz="-4.11838e-25" iyy="2.11609e-08" iyz="-1.48352e-24" izz="8.77419e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x15_4">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x15_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.000894601" />
+      <inertia ixx="2.11609e-08" ixy="5.79011e-24" ixz="-4.11838e-25" iyy="2.11609e-08" iyz="-1.48352e-24" izz="8.77419e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x40_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x40_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.0023856" />
+      <inertia ixx="3.29779e-07" ixy="-6.75308e-24" ixz="2.42338e-24" iyy="2.33978e-08" iyz="3.99283e-24" izz="3.29779e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x40_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x40_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.0023856" />
+      <inertia ixx="3.29779e-07" ixy="-6.75308e-24" ixz="2.42338e-24" iyy="2.33978e-08" iyz="3.99283e-24" izz="3.29779e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x40_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x40_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.0023856" />
+      <inertia ixx="3.29779e-07" ixy="-6.75308e-24" ixz="2.42338e-24" iyy="2.33978e-08" iyz="3.99283e-24" izz="3.29779e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x40_4">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x40_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.0023856" />
+      <inertia ixx="3.29779e-07" ixy="-6.75308e-24" ixz="2.42338e-24" iyy="2.33978e-08" iyz="3.99283e-24" izz="3.29779e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x50_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x50_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.002982" />
+      <inertia ixx="6.35875e-07" ixy="-8.31113e-24" ixz="3.19511e-24" iyy="2.92473e-08" iyz="1.02821e-23" izz="6.35875e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x50_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x50_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.002982" />
+      <inertia ixx="6.35875e-07" ixy="-8.31113e-24" ixz="3.19511e-24" iyy="2.92473e-08" iyz="1.02821e-23" izz="6.35875e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x50_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x50_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.002982" />
+      <inertia ixx="6.35875e-07" ixy="-8.31113e-24" ixz="3.19511e-24" iyy="2.92473e-08" iyz="1.02821e-23" izz="6.35875e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_PosteM3x50_4">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_PosteM3x50_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.002982" />
+      <inertia ixx="6.35875e-07" ixy="-8.31113e-24" ixz="3.19511e-24" iyy="2.92473e-08" iyz="1.02821e-23" izz="6.35875e-07" />
+    </inertial>
+  </link>
+  <link name="CLM_RasPi5_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_RasPi5_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.00614909104 0.0008646756167 0.0009674605957" rpy="0 0 0" />
+      <mass value="0.0181336" />
+      <inertia ixx="5.26741e-06" ixy="1.28607e-06" ixz="8.89656e-08" iyy="1.63067e-05" iyz="-2.36795e-08" izz="1.19631e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_RasPi5_Cooler_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_RasPi5_Cooler_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="6.401612073e-05 -0.000795562091 0.000270491552" rpy="0 0 0" />
+      <mass value="0.00739216" />
+      <inertia ixx="9.5522e-07" ixy="4.66535e-09" ixz="-2.23024e-07" iyy="2.72311e-06" iyz="-1.10416e-08" izz="1.88683e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_RuedaLoca_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_RuedaLoca_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-1.292662206e-08 0.002768575268 -2.977252919e-08" rpy="0 0 0" />
+      <mass value="0.0612478" />
+      <inertia ixx="3.83612e-06" ixy="1.80546e-14" ixz="-4.98685e-13" iyy="5.52771e-06" iyz="-2.26355e-14" izz="4.33914e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_RuedaLoca_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_RuedaLoca_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-1.292662206e-08 0.002768575268 -2.977252919e-08" rpy="0 0 0" />
+      <mass value="0.0612478" />
+      <inertia ixx="3.83612e-06" ixy="1.80546e-14" ixz="-4.98685e-13" iyy="5.52771e-06" iyz="-2.26355e-14" izz="4.33914e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_Separador_Rue_Loca_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Separador_Rue_Loca_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001219670932 -1.252865676e-10 0" rpy="0 0 0" />
+      <mass value="0.000322073" />
+      <inertia ixx="3.12278e-09" ixy="5.32774e-26" ixz="-1.9656e-26" iyy="4.82256e-09" iyz="-1.13596e-26" izz="2.38428e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_Separador_Rue_Loca_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Separador_Rue_Loca_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001219670932 -1.252865676e-10 0" rpy="0 0 0" />
+      <mass value="0.000322073" />
+      <inertia ixx="3.12278e-09" ixy="5.32774e-26" ixz="-1.9656e-26" iyy="4.82256e-09" iyz="-1.13596e-26" izz="2.38428e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_Separador_Rue_Loca_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Separador_Rue_Loca_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001219670932 -1.252865676e-10 0" rpy="0 0 0" />
+      <mass value="0.000322073" />
+      <inertia ixx="3.12278e-09" ixy="5.32774e-26" ixz="-1.9656e-26" iyy="4.82256e-09" iyz="-1.13596e-26" izz="2.38428e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_Separador_Rue_Loca_4">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_Separador_Rue_Loca_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001219670932 -1.252865676e-10 0" rpy="0 0 0" />
+      <mass value="0.000322073" />
+      <inertia ixx="3.12278e-09" ixy="5.32774e-26" ixz="-1.9656e-26" iyy="4.82256e-09" iyz="-1.13596e-26" izz="2.38428e-09" />
+    </inertial>
+  </link>
+  <link name="CLM_ShieldESP32_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_ShieldESP32_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-9.129783451e-05 0 -3.629142822e-05" rpy="0 0 0" />
+      <mass value="0.0133759" />
+      <inertia ixx="2.90848e-06" ixy="3.21173e-23" ixz="7.84263e-08" iyy="8.06538e-06" iyz="-2.49734e-24" izz="5.17973e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_StepUp_XL4015_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_StepUp_XL4015_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.001152050422 0.0004101904309 0.00169554043" rpy="0 0 0" />
+      <mass value="0.0345983" />
+      <inertia ixx="4.47562e-06" ixy="7.48568e-08" ixz="-9.2034e-08" iyy="1.48952e-05" iyz="-8.14644e-08" izz="1.11348e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_VL53L1XV2_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_VL53L1XV2_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-7.211034103e-08 0.000161079543 -0.0005362618424" rpy="0 0 0" />
+      <mass value="0.00145621" />
+      <inertia ixx="1.738e-08" ixy="-2.11981e-14" ixz="8.93156e-15" iyy="4.68328e-08" iyz="-2.88993e-09" izz="5.61274e-08" />
+    </inertial>
+  </link>
+  <link name="CLM_VL53L1XV2_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_VL53L1XV2_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-7.211034103e-08 0.000161079543 -0.0005362618424" rpy="0 0 0" />
+      <mass value="0.00145621" />
+      <inertia ixx="1.738e-08" ixy="-2.11981e-14" ixz="8.93156e-15" iyy="4.68328e-08" iyz="-2.88993e-09" izz="5.61274e-08" />
+    </inertial>
+  </link>
+  <link name="CLM_VL53L1XV2_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_VL53L1XV2_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-7.211034103e-08 0.000161079543 -0.0005362618424" rpy="0 0 0" />
+      <mass value="0.00145621" />
+      <inertia ixx="1.738e-08" ixy="-2.11981e-14" ixz="8.93156e-15" iyy="4.68328e-08" iyz="-2.88993e-09" izz="5.61274e-08" />
+    </inertial>
+  </link>
+  <link name="Motorreductor_37D_con_encoder_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/Motorreductor_37D_con_encoder_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001323148374 0.0003000539181 0.01085713394" rpy="0 0 0" />
+      <mass value="0.461699" />
+      <inertia ixx="0.000191191" ixy="-1.79063e-07" ixz="-3.57808e-07" iyy="0.000190668" iyz="-1.90464e-06" izz="7.21845e-05" />
+    </inertial>
+  </link>
+  <link name="Motorreductor_37D_con_encoder_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/Motorreductor_37D_con_encoder_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.0001323148374 0.0003000539181 0.01085713394" rpy="0 0 0" />
+      <mass value="0.461699" />
+      <inertia ixx="0.000191191" ixy="-1.79063e-07" ixz="-3.57808e-07" iyy="0.000190668" iyz="-1.90464e-06" izz="7.21845e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_EnsBat3S1P_1__CLM_18650Battery_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_EnsBat3S1P__CLM_18650Battery_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-4.977285227e-06 -0.0001556136244 -1.525605542e-07" rpy="0 0 0" />
+      <mass value="0.127527" />
+      <inertia ixx="4.53742e-05" ixy="-8.19355e-12" ixz="-1.67655e-11" iyy="5.15134e-06" iyz="6.37701e-12" izz="4.53739e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_EnsBat3S1P_1__CLM_18650Battery_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_EnsBat3S1P__CLM_18650Battery_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-4.977285227e-06 -0.0001556136244 -1.525605542e-07" rpy="0 0 0" />
+      <mass value="0.127527" />
+      <inertia ixx="4.53742e-05" ixy="-8.19355e-12" ixz="-1.67655e-11" iyy="5.15134e-06" iyz="6.37701e-12" izz="4.53739e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_EnsBat3S1P_1__CLM_18650Battery_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_EnsBat3S1P__CLM_18650Battery_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-4.977285227e-06 -0.0001556136244 -1.525605542e-07" rpy="0 0 0" />
+      <mass value="0.127527" />
+      <inertia ixx="4.53742e-05" ixy="-8.19355e-12" ixz="-1.67655e-11" iyy="5.15134e-06" iyz="6.37701e-12" izz="4.53739e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_EnsBat3S1P_1__CLM_BMS_3S_25A_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_EnsBat3S1P__CLM_BMS_3S_25A_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0007648564182 0.0003217985775 7.41855238e-05" rpy="0 0 0" />
+      <mass value="0.00832189" />
+      <inertia ixx="1.88131e-06" ixy="2.79257e-08" ixz="1.2256e-08" iyy="1.25092e-06" iyz="6.30565e-09" izz="3.12441e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_EnsBat3S1P_1__CLM_HolderBMS_2">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_EnsBat3S1P__CLM_HolderBMS_2.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.760067692e-05 -2.334773077e-07 -0.0001042511759" rpy="0 0 0" />
+      <mass value="0.0164358" />
+      <inertia ixx="6.43646e-06" ixy="5.0274e-13" ixz="-5.98248e-08" iyy="1.8729e-06" iyz="-4.39744e-13" izz="7.68449e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_EnsBat3S1P_1__CLM_HolderBMS_3">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_EnsBat3S1P__CLM_HolderBMS_2.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.760067692e-05 -2.334773077e-07 -0.0001042511759" rpy="0 0 0" />
+      <mass value="0.0164358" />
+      <inertia ixx="6.43646e-06" ixy="5.0274e-13" ixz="-5.98248e-08" iyy="1.8729e-06" iyz="-4.39744e-13" izz="7.68449e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_LogitechC920Montaj_1__Logitech_C920_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_LogitechC920Montaj__Logitech_C920_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="1.629345551e-07 0.001165009645 0.0009780374508" rpy="0 0 0" />
+      <mass value="0.126978" />
+      <inertia ixx="1.18578e-05" ixy="-7.17861e-12" ixz="-8.34917e-11" iyy="8.90444e-05" iyz="2.27935e-07" izz="9.1192e-05" />
+    </inertial>
+  </link>
+  <link name="CLM_LogitechC920Montaj_1__Logitech_C920Arm_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_LogitechC920Montaj__Logitech_C920Arm_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="1.184944512e-05 -0.0002629298496 -0.001098767263" rpy="0 0 0" />
+      <mass value="0.053775" />
+      <inertia ixx="1.75689e-05" ixy="1.19298e-09" ixz="-4.0774e-09" iyy="2.38903e-05" iyz="-2.50726e-08" izz="9.1551e-06" />
+    </inertial>
+  </link>
+  <link name="CLM_LogitechC920Montaj_1__Logitech_C920Glass_1">
+    
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_description/meshes/CLM_LogitechC920Montaj__Logitech_C920Glass_1.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-2.85676082e-06 -1.336350615e-07 -6.400062172e-08" rpy="0 0 0" />
+      <mass value="0.000861555" />
+      <inertia ixx="4.1077e-08" ixy="1.69349e-12" ixz="4.68605e-13" iyy="2.53493e-07" iyz="2.18112e-14" izz="2.94534e-07" />
+    </inertial>
+  </link>
+  <joint name="CLM_Base_2__CLM_Holder18650_1" type="fixed">
+    <origin xyz="-0.06428918516 2.939762118e-07 0.01325211951" rpy="1.5708 2.653589793e-06 -3.141592653" />
+    <parent link="base_link" />
+    <child link="CLM_Holder18650_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_BracketsPololu37D_2" type="fixed">
+    <origin xyz="-3.593346887e-08 -0.05521912719 0.01159821342" rpy="1.570792654 -2.653589793e-06 -7.048503811e-12" />
+    <parent link="base_link" />
+    <child link="CLM_BracketsPololu37D_2" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_BracketsPololu37D_3" type="fixed">
+    <origin xyz="-2.561675376e-08 0.05521921238 0.01159780775" rpy="1.5708 2.653589793e-06 -3.141592653" />
+    <parent link="base_link" />
+    <child link="CLM_BracketsPololu37D_3" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_BracketsPololu37D_2__Motorreductor_37D_con_encoder_1" type="fixed">
+    <origin xyz="0.0001598845674 0.01140745541 -0.02356069823" rpy="0 0 0" />
+    <parent link="CLM_BracketsPololu37D_2" />
+    <child link="Motorreductor_37D_con_encoder_1" />
+    <axis xyz="0 0 -1" />
+    
+    
+  </joint>
+  <joint name="CLM_BracketsPololu37D_3__Motorreductor_37D_con_encoder_2" type="fixed">
+    <origin xyz="0.0001598845674 0.01140745541 -0.02356069823" rpy="0 0 0" />
+    <parent link="CLM_BracketsPololu37D_3" />
+    <child link="Motorreductor_37D_con_encoder_2" />
+    <axis xyz="0 0 -1" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_Cytron_MDD10A_1" type="fixed">
+    <origin xyz="0.05558573332 -0.003429880893 0.02000903328" rpy="1.570793673 3.673205103e-06 1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_Cytron_MDD10A_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x15_2" type="fixed">
+    <origin xyz="0.08349997213 -0.0392475035 0.01050036574" rpy="-3.14159 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x15_2" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x50_3" type="fixed">
+    <origin xyz="-0.05500007429 -0.07499989715 0.02800012954" rpy="1.57079898 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x50_3" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_Separador_Rue_Loca_2" type="fixed">
+    <origin xyz="0.07999998713 0.01992424375 0.004850139227" rpy="1.57079898 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_Separador_Rue_Loca_2" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_Separador_Rue_Loca_3" type="fixed">
+    <origin xyz="-0.08000001287 -0.01992420812 0.004849861024" rpy="1.570793673 3.673205103e-06 1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_Separador_Rue_Loca_3" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Separador_Rue_Loca_3__CLM_RuedaLoca_1" type="fixed">
+    <origin xyz="0.01992423883 -0.003775398646 -2.948832464e-08" rpy="-3.141592653 0 0" />
+    <parent link="CLM_Separador_Rue_Loca_3" />
+    <child link="CLM_RuedaLoca_1" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="Motorreductor_37D_con_encoder_1__CLM_Llanta60mmD_2" type="continuous">
+    <origin xyz="-0.0001598794074 -0.006505466002 0.06138907051" rpy="-4.10206857e-10 -1.570796327 4.10206857e-10" />
+    <parent link="Motorreductor_37D_con_encoder_1" />
+    <child link="CLM_Llanta60mmD_2" />
+    <axis xyz="-1 0 0" />
+    
+    
+  </joint>
+  <joint name="Motorreductor_37D_con_encoder_2__CLM_Llanta60mmD_1" type="continuous">
+    <origin xyz="-0.0001598794074 -0.006505466002 0.06138907051" rpy="3.141592654 1.570796327 3.141592654" />
+    <parent link="Motorreductor_37D_con_encoder_2" />
+    <child link="CLM_Llanta60mmD_1" />
+    <axis xyz="-1 0 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x15_1" type="fixed">
+    <origin xyz="0.08349997214 0.03924758063 0.01050007741" rpy="-3.14159 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x15_1" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x15_3" type="fixed">
+    <origin xyz="0.02749997213 -0.0392475035 0.01050021714" rpy="-3.14159 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x15_3" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x15_4" type="fixed">
+    <origin xyz="0.02749997214 0.03924758063 0.01049992881" rpy="-3.14159 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x15_4" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x50_1" type="fixed">
+    <origin xyz="-0.05500007429 0.07500010285 0.02799957856" rpy="1.57079898 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x50_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x50_2" type="fixed">
+    <origin xyz="0.05499992571 0.07500010285 0.02799987046" rpy="1.57079898 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x50_2" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_PosteM3x50_4" type="fixed">
+    <origin xyz="0.05499992571 -0.07499989715 0.02800042144" rpy="1.57079898 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PosteM3x50_4" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_Separador_Rue_Loca_1" type="fixed">
+    <origin xyz="-0.08000001287 0.01992424375 0.004849714652" rpy="1.57079898 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_Separador_Rue_Loca_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_Separador_Rue_Loca_4" type="fixed">
+    <origin xyz="0.07999998713 -0.01992420812 0.004850285599" rpy="1.570793673 3.673205103e-06 1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_Separador_Rue_Loca_4" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Separador_Rue_Loca_4__CLM_RuedaLoca_2" type="fixed">
+    <origin xyz="0.01992423883 -0.003775398646 -2.948832464e-08" rpy="-3.141592653 0 0" />
+    <parent link="CLM_Separador_Rue_Loca_4" />
+    <child link="CLM_RuedaLoca_2" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_PosteM3x50_1__CLM_Plato_1" type="fixed">
+    <origin xyz="0.07486040597 0.02641732974 -0.05529989399" rpy="1.323258979e-05 -1.570796327 -1.323258979e-05" />
+    <parent link="CLM_PosteM3x50_1" />
+    <child link="CLM_Plato_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_Holder3TOF_1" type="fixed">
+    <origin xyz="-0.08990730205 0.01870730362 -0.0001520118609" rpy="-1.570796327 0 0" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_Holder3TOF_1" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_PI5_CaseBase_1" type="fixed">
+    <origin xyz="0.001164178255 0.003802600243 0.04805233776" rpy="1.570796327 1.570796321 -3.141592653" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_PI5_CaseBase_1" />
+    <axis xyz="0 0 -1" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_PisoCam_1" type="fixed">
+    <origin xyz="0.0002947482601 0.04308267026 -0.0001363056763" rpy="0 0 0" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_PisoCam_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_ShieldESP32_1" type="fixed">
+    <origin xyz="-0.01111573268 0.003182670293 -0.04649916285" rpy="-3.141592653 0 3.141592653" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_ShieldESP32_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_StepUp_XL4015_1" type="fixed">
+    <origin xyz="0.0677390252 0.008390131786 -0.01235997631" rpy="-3.141592653 1.570796225 -3.141592653" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_StepUp_XL4015_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Holder3TOF_1__CLM_VL53L1XV2_1" type="fixed">
+    <origin xyz="-0.0046560106 -0.0025881435 0.002375298203" rpy="4.10206857e-10 1.570796327 4.10206857e-10" />
+    <parent link="CLM_Holder3TOF_1" />
+    <child link="CLM_VL53L1XV2_1" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Holder3TOF_1__CLM_VL53L1XV2_2" type="fixed">
+    <origin xyz="0.009268041015 -0.04954810228 0.002375298203" rpy="-0.5235987756 1.570796327 4.10206857e-10" />
+    <parent link="CLM_Holder3TOF_1" />
+    <child link="CLM_VL53L1XV2_2" />
+    <axis xyz="0 0 -1" />
+    
+    
+  </joint>
+  <joint name="CLM_Holder3TOF_1__CLM_VL53L1XV2_3" type="fixed">
+    <origin xyz="0.007280776835 0.0450812241 0.002375298203" rpy="0.5235987756 1.570796327 4.10206857e-10" />
+    <parent link="CLM_Holder3TOF_1" />
+    <child link="CLM_VL53L1XV2_3" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_PI5_CaseBase_1__CLM_RasPi5_1" type="fixed">
+    <origin xyz="0.0002571431094 -0.009605922012 0.005766934999" rpy="1.570796327 0 -1.57079634" />
+    <parent link="CLM_PI5_CaseBase_1" />
+    <child link="CLM_RasPi5_1" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_PisoCam_1__CLM_BaseCam_1" type="fixed">
+    <origin xyz="-0.02399485427 0.006551456244 -3.262764386e-06" rpy="4.10206857e-10 1.570796327 4.10206857e-10" />
+    <parent link="CLM_PisoCam_1" />
+    <child link="CLM_BaseCam_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_RasPi5_1__CLM_RasPi5_Cooler_1" type="fixed">
+    <origin xyz="-0.01889908186 0.004810931926 -0.002025174487" rpy="0 0 0" />
+    <parent link="CLM_RasPi5_1" />
+    <child link="CLM_RasPi5_Cooler_1" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_KCD1_2" type="fixed">
+    <origin xyz="0.04293127258 -0.003425924021 -0.06613855875" rpy="1.323258979e-05 1.570796327 1.323258979e-05" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_KCD1_2" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_PosteM3x40_1" type="fixed">
+    <origin xyz="0.04029989399 0.02158267026 -0.08513959403" rpy="1.323258979e-05 1.570796327 1.323258979e-05" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_PosteM3x40_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_ShieldESP32_1__CLM_ExpansionBoardESP32_1" type="fixed">
+    <origin xyz="-0.002221719825 0.006414062776 0.0002124888218" rpy="3.141592653 1.558748957 3.141592653" />
+    <parent link="CLM_ShieldESP32_1" />
+    <child link="CLM_ExpansionBoardESP32_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_ExpansionBoardESP32_1__CLM_ESP32_Wroom_30pins_1" type="fixed">
+    <origin xyz="0.0008198676562 0.0107528914 0.01052025039" rpy="1.570796327 0 3.141592653" />
+    <parent link="CLM_ExpansionBoardESP32_1" />
+    <child link="CLM_ESP32_Wroom_30pins_1" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_KCD1_1" type="fixed">
+    <origin xyz="0.06052605654 -0.003425924021 0.05742833206" rpy="1.323258979e-05 1.570796327 1.323258979e-05" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_KCD1_1" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_PosteM3x40_2" type="fixed">
+    <origin xyz="-0.03970010601 0.02158267026 -0.08513959403" rpy="1.323258979e-05 1.570796327 1.323258979e-05" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_PosteM3x40_2" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_PosteM3x40_3" type="fixed">
+    <origin xyz="-0.03970010601 0.02158267026 0.08486040597" rpy="1.323258979e-05 1.570796327 1.323258979e-05" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_PosteM3x40_3" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Plato_1__CLM_PosteM3x40_4" type="fixed">
+    <origin xyz="0.04029989399 0.02158267026 0.08486040597" rpy="1.323258979e-05 1.570796327 1.323258979e-05" />
+    <parent link="CLM_Plato_1" />
+    <child link="CLM_PosteM3x40_4" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_BaseCam_1__CLM_LogitechC920Montaj_1__Logitech_C920Arm_1" type="fixed">
+    <origin xyz="-0.0001337084003 0.01371238028 0.005398527993" rpy="3.141592653 0 -3.141592653" />
+    <parent link="CLM_BaseCam_1" />
+    <child link="CLM_LogitechC920Montaj_1__Logitech_C920Arm_1" />
+    <axis xyz="-1 0 0" />
+    
+    
+  </joint>
+  <joint name="CLM_LogitechC920Montaj_1__Logitech_C920Arm_1__CLM_LogitechC920Montaj_1__Logitech_C920_1" type="fixed">
+    <origin xyz="-2.902294488e-05 0.02098703389 0.02358025179" rpy="3.035215863 0 -3.141592653" />
+    <parent link="CLM_LogitechC920Montaj_1__Logitech_C920Arm_1" />
+    <child link="CLM_LogitechC920Montaj_1__Logitech_C920_1" />
+    <axis xyz="1 0 0" />
+    
+    
+  </joint>
+  <joint name="CLM_LogitechC920Montaj_1__Logitech_C920_1__CLM_LogitechC920Montaj_1__Logitech_C920Glass_1" type="fixed">
+    <origin xyz="5.195705123e-05 0.0002922896135 -0.01074059663" rpy="3.141592653 0 -3.141592653" />
+    <parent link="CLM_LogitechC920Montaj_1__Logitech_C920_1" />
+    <child link="CLM_LogitechC920Montaj_1__Logitech_C920Glass_1" />
+    <axis xyz="-1 0 0" />
+    
+    
+  </joint>
+  <joint name="CLM_BracketsPololu37D_2__CLM_EnsBat3S1P_1__CLM_HolderBMS_3" type="fixed">
+    <origin xyz="-0.05306413024 0.01137538581 -0.03039780095" rpy="0 0 1.570796327" />
+    <parent link="CLM_BracketsPololu37D_2" />
+    <child link="CLM_EnsBat3S1P_1__CLM_HolderBMS_3" />
+    <axis xyz="0 0 -1" />
+    
+    
+  </joint>
+  <joint name="CLM_EnsBat3S1P_1__CLM_HolderBMS_3__CLM_EnsBat3S1P_1__CLM_HolderBMS_2" type="fixed">
+    <origin xyz="0 -4.631973077e-07 -0.05014273765" rpy="3.141592653 0 0" />
+    <parent link="CLM_EnsBat3S1P_1__CLM_HolderBMS_3" />
+    <child link="CLM_EnsBat3S1P_1__CLM_HolderBMS_2" />
+    <axis xyz="0 0 -1" />
+    
+    
+  </joint>
+  <joint name="CLM_EnsBat3S1P_1__CLM_HolderBMS_3__CLM_EnsBat3S1P_1__CLM_BMS_3S_25A_1" type="fixed">
+    <origin xyz="0.01563079226 0.0004443852827 -0.02511510876" rpy="1.570796327 0 1.570796327" />
+    <parent link="CLM_EnsBat3S1P_1__CLM_HolderBMS_3" />
+    <child link="CLM_EnsBat3S1P_1__CLM_BMS_3S_25A_1" />
+    <axis xyz="0 0 1" />
+    
+    
+  </joint>
+  <joint name="CLM_EnsBat3S1P_1__CLM_HolderBMS_3__CLM_EnsBat3S1P_1__CLM_18650Battery_2" type="fixed">
+    <origin xyz="-0.0008686894163 0.02069963051 -0.02485072561" rpy="1.570796327 0 0" />
+    <parent link="CLM_EnsBat3S1P_1__CLM_HolderBMS_3" />
+    <child link="CLM_EnsBat3S1P_1__CLM_18650Battery_2" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_EnsBat3S1P_1__CLM_HolderBMS_2__CLM_EnsBat3S1P_1__CLM_18650Battery_1" type="fixed">
+    <origin xyz="-0.0008686894163 0.02069990627 -0.02529201205" rpy="-1.570796327 0 0" />
+    <parent link="CLM_EnsBat3S1P_1__CLM_HolderBMS_2" />
+    <child link="CLM_EnsBat3S1P_1__CLM_18650Battery_1" />
+    <axis xyz="0 1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_EnsBat3S1P_1__CLM_HolderBMS_2__CLM_EnsBat3S1P_1__CLM_18650Battery_3" type="fixed">
+    <origin xyz="-0.0008686894163 -3.694873077e-07 -0.02485072561" rpy="1.570796327 0 0" />
+    <parent link="CLM_EnsBat3S1P_1__CLM_HolderBMS_2" />
+    <child link="CLM_EnsBat3S1P_1__CLM_18650Battery_3" />
+    <axis xyz="0 -1 0" />
+    
+    
+  </joint>
+  <joint name="CLM_Base_2__CLM_IMU_BMI270_1" type="fixed">
+    <origin xyz="0.05906647923 0.0005382832371 0.05521959252" rpy="2.653589804e-06 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_IMU_BMI270_1" />
+  </joint>
+  <joint name="CLM_Base_2__CLM_PI5_CaseTop_1" type="fixed">
+    <origin xyz="0.0006548747922 0.051432663 0.06735571273" rpy="2.653589804e-06 -3.673205103e-06 -1.570796327" />
+    <parent link="base_link" />
+    <child link="CLM_PI5_CaseTop_1" />
+  </joint>
+
+    
+  <gazebo reference="CLM_Llanta60mmD_1"><mu1>1.0</mu1><mu2>1.0</mu2></gazebo>
+  <gazebo reference="CLM_Llanta60mmD_2"><mu1>1.0</mu1><mu2>1.0</mu2></gazebo>
+  <gazebo reference="CLM_RuedaLoca_1"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+  <gazebo reference="CLM_RuedaLoca_2"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>Motorreductor_37D_con_encoder_2__CLM_Llanta60mmD_1</left_joint>
+      <right_joint>Motorreductor_37D_con_encoder_1__CLM_Llanta60mmD_2</right_joint>
+      <wheel_separation>0.174</wheel_separation>
+      <wheel_radius>0.03</wheel_radius>
+      <max_linear_velocity>0.5</max_linear_velocity>
+      <max_angular_velocity>3.0</max_angular_velocity>
+      <topic>/cmd_vel</topic>
+      <odom_topic>/odom</odom_topic>
+      <tf_topic>/tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_link</child_frame_id>
+      <odom_publish_frequency>30</odom_publish_frequency>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/joint_states</topic>
+    </plugin>
+  </gazebo>
+
+</robot>

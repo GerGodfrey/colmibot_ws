@@ -24,8 +24,9 @@ setup(
         ],
     },
     entry_points={
-        'console_scripts': [
-            'play_station_turtle_controller = colmibotbasics.play_station_turtle_controller:main',
-        ],
-    },
+    'console_scripts': [
+        'play_station_turtle_controller = colmibotbasics.play_station_turtle_controller:main',
+        'colmibot_controller = colmibotbasics.colmibot_controller:main',
+    ],
+},
 )
