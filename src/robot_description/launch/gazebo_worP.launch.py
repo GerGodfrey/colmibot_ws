@@ -17,6 +17,8 @@ def generate_launch_description():
     return LaunchDescription([
         # Para que Gazebo encuentre las mallas
         AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.dirname(pkg)),
+        # Para que gazebo encuentre model://pallet y model://rescue_randy 
+        AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.join(pkg, "models")),
         # Gazebo con mundo vacio
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(gz_launch),
