@@ -419,15 +419,180 @@ En lugar de modificar las piezas del CAD (que se siguen usando para dibujar el r
 
 El robot se ve igual en RViz y en Gazebo; solo se agregan frames invisibles a los que después se les "pega" cada sensor de Gazebo (`<gazebo reference="tof_center_link">`).
 
-### Modificaciones al modelo
-*(En construcción).*
+### Sensor 1: IMU (BMI270) ✅
+#### Hitos
+- [x] Link de referencia `imu_link` en la posición real del chip, alineado con el robot.
+- [x] Sensor `imu` de Gazebo a 100 Hz con ruido gaussiano.
+- [x] Sistema `gz-sim-imu-system` que calcula la IMU en cada paso de la simulación.
+- [x] Puente `/imu` de Gazebo a ROS 2 (`sensor_msgs/msg/Imu`).
+- [x] Verificado: gravedad en z (~9.8 m/s²), giro en `angular_velocity.z` y respuesta a la aceleración en x.
+
+Se empezó por la IMU porque **no necesita render** (Gazebo la calcula con la física, no dibujando la escena). En una VM sin tarjeta gráfica es el sensor con menos riesgo, y permite validar toda la cadena antes de pasar a la cámara y los ToF, que sí dependen del render.
+
+#### Cómo llega un sensor de Gazebo a ROS 2
+Todos los sensores siguen la misma cadena; si la IMU funciona, la mitad del camino está validada para los demás.
+```
+link + joint    →  <sensor> de Gazebo  →  plugin (system)   →  ros_gz_bridge  →  tópico de ROS 2
+(imu_link)         (declara el sensor)     (lo calcula)         (traduce)          (/imu)
+```
+
+#### Modificaciones
+**1. `urdf/robot_description.urdf`**, al final, antes de `</robot>`:
+```xml
+<!-- ================= SENSORES ================= -->
+
+<!-- IMU BMI270: alineada con el robot (el chip real está girado -90° en yaw) -->
+<link name="imu_link">
+  <inertial>
+    <mass value="0.001" />
+    <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
+  </inertial>
+</link>
+<joint name="imu_link_joint" type="fixed">
+  <parent link="base_link" />
+  <child link="imu_link" />
+  <origin xyz="0.059 0.001 0.055" rpy="0 0 0" />
+</joint>
+
+<gazebo reference="imu_link">
+  <sensor name="imu" type="imu">
+    <topic>/imu</topic>
+    <gz_frame_id>imu_link</gz_frame_id>
+    <update_rate>100</update_rate>
+    <always_on>true</always_on>
+    <imu>
+      <angular_velocity>
+        <x><noise type="gaussian"><mean>0</mean><stddev>0.0002</stddev></noise></x>
+        <y><noise type="gaussian"><mean>0</mean><stddev>0.0002</stddev></noise></y>
+        <z><noise type="gaussian"><mean>0</mean><stddev>0.0002</stddev></noise></z>
+      </angular_velocity>
+      <linear_acceleration>
+        <x><noise type="gaussian"><mean>0</mean><stddev>0.017</stddev></noise></x>
+        <y><noise type="gaussian"><mean>0</mean><stddev>0.017</stddev></noise></y>
+        <z><noise type="gaussian"><mean>0</mean><stddev>0.017</stddev></noise></z>
+      </linear_acceleration>
+    </imu>
+  </sensor>
+</gazebo>
+
+<gazebo>
+  <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu" />
+</gazebo>
+```
+
+| Elemento | Para qué |
+|---|---|
+| `<link>` + `<joint>` | La "bandera" en la posición medida con `tf2_echo`, con masa simbólica para que Gazebo no la descarte. |
+| `reference="imu_link"` | Pega el sensor a esa bandera. |
+| `<topic>` | Tópico **de Gazebo** donde publica. |
+| `<gz_frame_id>` | `frame_id` de los mensajes. Sin él, Gazebo usaría `colmibot/base_link/imu` y RViz no lo encontraría en el árbol de TF. |
+| `<update_rate>` | 100 lecturas por segundo de simulación. |
+| `<noise>` | Ruido gaussiano, del orden del BMI270, para que los algoritmos no se acostumbren a datos perfectos. |
+| `gz-sim-imu-system` | El *system* que calcula la IMU. Sin él, el sensor existe pero nunca publica. |
+
+**2. `config/gz_bridge.yaml`**, al final:
+```yaml
+- ros_topic_name: "/imu"
+  gz_topic_name: "/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+```
+Cada bloque de la lista empieza con `- ` y las demás líneas llevan 2 espacios. Las direcciones válidas son exactamente `GZ_TO_ROS`, `ROS_TO_GZ` y `BIDIRECTIONAL`.
+
+#### Cómo replicarlo
+Requisitos: VM con al menos 6 GB de RAM, ROS 2 Jazzy y Gazebo Harmonic.
+
+1. Bajar los cambios y compilar desde cero:
+   ```bash
+   cd ~/Documents/colmibot_ws
+   git pull
+   rm -rf build install log
+   source /opt/ros/jazzy/setup.bash
+   colcon build --symlink-install
+   source install/setup.bash
+   ```
+2. Instalar las herramientas de prueba (una sola vez):
+   ```bash
+   sudo apt install ros-jazzy-rqt-plot ros-jazzy-teleop-twist-keyboard
+   ```
+3. Lanzar la simulación (terminal 1):
+   ```bash
+   export LIBGL_ALWAYS_SOFTWARE=1
+   ros2 launch robot_description gazebo_worP.launch.py 2>&1 | tee ~/log_imu.txt
+   ```
+4. Verificar en otra terminal (recordar `source install/setup.bash` en cada terminal nueva). Primero del lado de Gazebo y después del de ROS, para saber en qué parte de la cadena está el problema si algo falla:
+
+   | Paso | Comando | Resultado esperado |
+   |---|---|---|
+   | El sensor existe en Gazebo | `gz topic -l \| grep imu` | `/imu` |
+   | El sensor calcula | `gz topic -e -t /imu -n 1` | Un mensaje con `frame_id: imu_link` |
+   | El puente lo creó | `grep "Creating.*imu" ~/log_imu.txt` | `Creating GZ->ROS Bridge: [/imu ...]` |
+   | Llega a ROS | `ros2 topic hz /imu` | ~100 Hz × *real time factor* |
+   | Errores | `grep -E "ERROR\|WARN" ~/log_imu.txt` | Ninguno del puente |
+
+5. Ver la IMU en movimiento:
+   ```bash
+   # terminal 2
+   ros2 run rqt_plot rqt_plot /imu/angular_velocity/z /imu/linear_acceleration/x
+   # terminal 3
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard
+   ```
+   | Acción (teleop) | Qué debe pasar |
+   |---|---|
+   | Robot quieto | `linear_acceleration.z` ≈ 9.8; lo demás ≈ 0 |
+   | `j` (girar a la izquierda) | `angular_velocity.z` ≈ +1 rad/s |
+   | `l` (girar a la derecha) | `angular_velocity.z` ≈ −1 rad/s |
+   | `i` (arrancar) / `k` (frenar) | Pico positivo / negativo en `linear_acceleration.x` |
+
+#### Resultados
+Con el robot quieto, `gz topic -e -t /imu -n 1` mostró:
+
+| Campo | Valor | Interpretación |
+|---|---|---|
+| `frame_id` | `imu_link` | Lo asigna `<gz_frame_id>` |
+| `entity_name` | `colmibot::base_link::imu` | *Fixed joint lumping*: Gazebo fusionó `imu_link` con `base_link` y reubicó el sensor conservando su posición |
+| `orientation` | x≈0, y≈0, z≈0, w≈1 | Sin rotación: el robot está derecho |
+| `angular_velocity` | ~10⁻⁴ rad/s | Solo ruido, del orden del `stddev` de 0.0002 |
+| `linear_acceleration.z` | **9.789 m/s²** | La gravedad: el acelerómetro mide la fuerza que siente (el piso empujando hacia arriba), no el movimiento. En caída libre marcaría 0 |
+| `linear_acceleration` x, y | ~±0.008 | Ruido |
+| Covarianzas | 4e-08 y 0.000289 | Son stddev² (0.0002² y 0.017²). Los filtros como el EKF las usan para saber cuánto confiar en el sensor |
+
+`ros2 topic hz /imu` midió **~49 Hz**. La IMU publica a 100 Hz **de simulación**, pero la simulación corría a ~50 % del tiempo real en la VM; los mensajes llevan el tiempo de simulación, así que los nodos con `use_sim_time` ven 100 Hz.
+
+![IMU en rqt_plot](docs/img/imu_rqt_plot.png)
+
+#### Problemas, soluciones y limitaciones
+- **El puente no creaba `/imu` y no mostraba ningún error en pantalla**: `ros2 topic echo /imu` respondía *"Could not determine the type for the passed topic"*, aunque `gz topic` sí mostraba los datos. Había dos causas:
+  1. En el YAML decía `direction: GZ_TO_ROSS` (una S de más). El puente descarta las entradas inválidas y sigue con las demás; el error solo aparecía en el log: *"Could not parse entry: invalid direction [GZ_TO_ROSS]"*.
+  2. La copia de `gz_bridge.yaml` en `install/` era vieja: no era un *symlink* (en algún momento se compiló sin `--symlink-install`), así que no tomaba los cambios de `src/`.
+
+  **Solución:** corregir la dirección, recompilar con `colcon build --symlink-install` y reiniciar el launch. Para diagnosticar: `grep -E "ERROR|WARN"` en el log, y `ls -l install/.../gz_bridge.yaml` (si no hay flecha `->`, es una copia).
+- **Los cambios en archivos de configuración no se aplicaban**: los nodos leen el URDF, el YAML y el launch **solo al arrancar**. `--symlink-install` evita recompilar al editar archivos existentes, pero siempre hay que reiniciar el launch. Sí hay que recompilar al agregar archivos o carpetas nuevas o al cambiar `CMakeLists.txt`, `setup.py` o `package.xml`.
+- **Gazebo se trabó al primer lanzamiento**: con suficiente RAM, se resolvió volviendo a lanzar (la primera carga genera caché de mallas y texturas).
+- **`pgrep -a gz` no encontraba Gazebo**: `gz` es un script de Ruby, por lo que el proceso se llama `ruby`. Usar `pgrep -af "gz sim"`.
+- **`ros2 run rqt_plot /imu/...` respondía "No executable found"**: `ros2 run` necesita paquete **y** ejecutable: `ros2 run rqt_plot rqt_plot ...`.
+- **`ros2 topic echo` pasa demasiado rápido para leerlo**: usar `rqt_plot`, o filtrar un campo y una de cada N líneas: `PYTHONUNBUFFERED=1 ros2 topic echo /imu --field angular_velocity.z | grep -v -- "---" | awk 'NR % 25 == 0'`.
+
+**Limitaciones**
+- **Vibración en la simulación**: `linear_acceleration.x` oscila ±5 m/s², mucho más que el ruido configurado. Proviene del contacto con el piso de las ruedas locas (fijas, sin fricción) y de las colisiones con las mallas del CAD. Mejora pendiente: usar esferas simples como colisión de las ruedas locas.
+- **Orientación ideal**: Gazebo publica la orientación real del robot. El BMI270 real no la entrega: hay que estimarla integrando el giroscopio y el acelerómetro con un filtro.
+- **IMU girada en el hardware**: en el CAD el chip está girado −90° en yaw. En la simulación se alineó con el robot; en el robot real habrá que rotar las lecturas en el firmware o declarar el joint con `rpy="0 0 -1.5708"`.
+- **Frecuencia en tiempo real limitada por la VM** (~49 Hz medidos en lugar de 100).
+
+### Sensor 2: ToF VL53L1X ×3
+*(Pendiente).*
+
+### Sensor 3: Cámara Logitech C920
+*(Pendiente).*
 
 ### Arquitectura de comunicación
-*(En construcción).*
+| Tópico | Tipo (ROS 2) | Dirección | Sensor |
+|---|---|---|---|
+| `/imu` | `sensor_msgs/msg/Imu` | Gazebo → ROS 2 | IMU ✅ |
+| `/tof/{center,left,right}/scan` | `sensor_msgs/msg/LaserScan` | Gazebo → ROS 2 | ToF (pendiente) |
+| `/camera/image_raw`, `/camera/camera_info` | `sensor_msgs/msg/Image`, `CameraInfo` | Gazebo → ROS 2 | Cámara (pendiente) |
 
-### Comandos para ejecución
-*(En construcción).*
-
-### Problemas, soluciones y limitaciones
+### Problemas generales
 - **`tf2_echo` no imprimía nada dentro de un ciclo `for` con `timeout` y `grep`**: cuando la salida de un programa va a otro (`|`), se acumula en un *buffer* y se pierde si el programa se corta antes de llenarlo.
   **Solución:** correr `tf2_echo` directamente, uno por uno, y cortarlo con `Ctrl+C` (o forzar salida línea por línea con `stdbuf -oL`).
