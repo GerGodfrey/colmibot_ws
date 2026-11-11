@@ -230,3 +230,204 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 
 ### Link al video
 https://drive.google.com/file/d/1B5EPVo7lPgZjOoeS3nwbClFNNKDlH67F/view?usp=sharing
+
+
+## Escenario de prueba en Gazebo
+### Descripción breve
+En esta actividad se creó el primer escenario de prueba del Colmibot: un mundo de Gazebo que imita un pasillo de una planta manufacturera con cajas apiladas, una tarima, un derrame de líquido y dos personas. Este escenario servirá para probar los sensores del robot (detección de obstáculos, cámara) y más adelante las rutas de inspección.
+
+### Conceptos: mundo vs modelo
+- **Mundo** (`.sdf`): describe la simulación completa. Define la física (gravedad, tamaño del paso de tiempo), la luz, el piso, los *plugins* del simulador y qué objetos hay y dónde están. Solo se carga un mundo a la vez.
+- **Modelo**: un objeto individual y reutilizable (una tarima, una persona, el propio robot). Tiene su propia geometría, masa y colisiones. Un mismo modelo puede aparecer varias veces en uno o varios mundos.
+
+Un objeto puede vivir en el mundo de dos formas:
+1. **Definido dentro del mundo** con `<model>...</model>`: útil para figuras simples (cajas, cilindros) que solo se usan en ese mundo.
+2. **Incluido desde una carpeta de modelos** con `<include><uri>model://pallet</uri></include>`: el mundo no copia el objeto, solo lo referencia. Gazebo busca una carpeta llamada `pallet` en las rutas de la variable de entorno `GZ_SIM_RESOURCE_PATH`. Se usa para objetos con mallas (`.dae`) y texturas, o que se reutilizan.
+
+Cada modelo distingue dos geometrías:
+- **`<visual>`**: lo que se dibuja (puede ser una malla detallada).
+- **`<collision>`**: lo que usa la física para chocar (normalmente figuras simples, para que la simulación sea rápida). Si un objeto no tiene `<collision>`, el robot lo atraviesa.
+
+Además, un modelo puede ser **estático** (`<static>true</static>`: no se mueve nunca, como una pared) o **dinámico** (tiene masa e inercia y la física lo puede empujar o tirar).
+
+### Elementos del mundo `prueba.sdf`
+El robot aparece en `(-1, 0)` mirando hacia +x, es decir, hacia la fila de cajas.
+
+| Elemento | Tipo | Posición (x, y) | Colisión | Observaciones |
+|---|---|---|---|---|
+| `ground_plane` | Definido en el mundo, estático | (0, 0) | Sí | Piso de 100 × 100 m |
+| `box_1` … `box_6` | Definidos en el mundo, dinámicos | x = 1, y de -0.35 a 0.35 | Sí | Dos filas de cajas de cartón (13.5–15 kg); obstáculo frente al robot |
+| `mi_pallet` | `model://pallet`, dinámico | (1, 2) | Sí (4 cajas simples) | Tarima de madera; la malla solo es visual |
+| `liquido_derrame` | Definido en el mundo, estático | (1, 3) | **No** | Disco azul de 2 mm: el robot pasa por encima, solo la cámara lo puede detectar |
+| `persona_randy` | `model://rescue_randy`, estático | (1, -1.55) | Sí (malla) | Maniquí realista con texturas |
+| `persona_geometrica` | Definido en el mundo, estático | (1, -2.5) | Solo el cuerpo | Persona simplificada: cilindro (cuerpo) y esfera (cabeza) |
+| `sun` | Luz direccional | — | — | Luz con sombras |
+
+*Plugins* del mundo:
+| Plugin | Para qué |
+|---|---|
+| `gz-sim-physics-system` | Simula la física (gravedad, choques) |
+| `gz-sim-user-commands-system` | Permite crear y borrar objetos, por ejemplo hacer *spawn* del robot |
+| `gz-sim-scene-broadcaster-system` | Envía la escena a la interfaz gráfica |
+| `gz-sim-contact-system` | Detecta contactos entre objetos |
+| `gz-sim-sensors-system` | Genera los datos de los sensores que necesitan render (cámara, lidar); se usará en la sección de sensores |
+
+### Carpetas y archivos agregados
+```
+src/robot_description/
+├── launch/
+│   └── gazebo_worP.launch.py      ← abre Gazebo con prueba.sdf y mete al robot
+├── worlds/
+│   └── prueba.sdf                 ← el mundo
+└── models/
+    ├── pallet/
+    │   ├── model.config           ← ficha del modelo: nombre, autor, qué .sdf cargar
+    │   ├── model.sdf              ← definición: visual, colisión, masa
+    │   ├── meshes/                ← geometría (pallet.dae) y textura (Bois_palette.jpg)
+    │   └── thumbnails/            ← imágenes de vista previa
+    └── rescue_randy/
+        ├── model.config
+        ├── model.sdf
+        ├── meshes/                ← rescue_randy.dae
+        ├── materials/             ← texturas (color, relieve, brillo) y script de material
+        └── thumbnails/
+```
+Esta es la estructura estándar de un modelo de Gazebo: `model.config` y `model.sdf` son obligatorios; las demás carpetas las referencia el `model.sdf` con rutas del tipo `model://rescue_randy/meshes/rescue_randy.dae`. Rescue Randy es un modelo de [Gazebo Fuel](https://app.gazebosim.org/), la biblioteca pública de modelos de Open Robotics.
+
+### Comandos para ejecución
+```
+cd ~/Documents/colmibot_ws
+colcon build --symlink-install
+source install/setup.bash
+LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_description gazebo_worP.launch.py
+```
+
+### Resultado
+Mundo cargado en Gazebo con todos sus elementos: derrame (azul), tarima, cajas, Rescue Randy y la persona geométrica. El punto pequeño al frente es el Colmibot en `(-1, 0)`. Abajo a la derecha se ve el *real time factor* (~85 %).
+
+![Escenario de prueba en Gazebo](docs/img/escenario_prueba_gazebo.png)
+
+### Problemas, soluciones y limitaciones
+- **Gazebo no encontraba los modelos y se cerraba**: el log mostraba *"Unable to find uri[model://pallet]"* y *"Unable to find uri[model://rescue_randy]"*, seguido de *"process has finished cleanly"*; `create` se quedaba repitiendo *"Requesting list of world names"* porque el mundo nunca terminó de cargar. Había dos causas:
+  1. En `CMakeLists.txt`, la línea `install(DIRECTORY worlds/ models/ DESTINATION share/${PROJECT_NAME}/worlds)` copiaba el **contenido** de ambas carpetas (la diagonal final copia el contenido, no la carpeta) dentro de `share/robot_description/worlds/`, mezclando mundos y modelos.
+  2. El launch solo agregaba a `GZ_SIM_RESOURCE_PATH` la carpeta `share/` (necesaria para las mallas del robot), así que Gazebo buscaba `share/pallet`, que no existe.
+
+  **Solución:** instalar `worlds` y `models` como carpetas propias y agregar la carpeta de modelos a la ruta de búsqueda de Gazebo:
+  ```cmake
+  install(DIRECTORY urdf meshes launch rviz config worlds models
+    DESTINATION share/${PROJECT_NAME})
+  ```
+  ```python
+  AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.join(pkg, "models")),
+  ```
+  Después se borraron las carpetas generadas (`rm -rf build install log`) y se recompiló, para que no quedara la copia vieja de los modelos dentro de `worlds/`.
+- **Gazebo no abría y no mostraba ningún error**: la máquina virtual tenía solo 1.9 GB de RAM y estaba usando 1.4 GB de *swap* (disco usado como memoria de emergencia). El mundo, con las mallas y texturas de Rescue Randy, no cabía en memoria y Gazebo nunca llegó a cargarlo.
+  **Solución:** apagar la VM y subir la memoria a 6 GB en VirtualBox (*Settings → System → Base Memory*), en una Mac de 16 GB.
+
+**Limitaciones**
+- Con render por software, la simulación corre a ~85 % del tiempo real (*real time factor*), por lo que un segundo simulado tarda un poco más que uno real.
+- El derrame de líquido no tiene colisión: los sensores de distancia no lo detectan, solo la cámara podrá hacerlo.
+- Las cajas son dinámicas (13.5–15 kg) y el robot pesa ~2.3 kg, por lo que un choque puede moverlas.
+
+
+## Sensores en simulación
+### Descripción breve
+En esta actividad se agregan al gemelo digital los sensores reales del Colmibot para que Gazebo genere sus lecturas y las publique en ROS 2. Antes de simularlos fue necesario ubicar cada sensor en el modelo y corregir la orientación con la que el CAD exportó sus piezas.
+
+### Sensores del Colmibot
+Se simulan únicamente los sensores que existen en el hardware (restricción de la v1: no modificar el robot).
+
+| Sensor | Modelo | Qué mide | Cómo se simula en Gazebo | Hipótesis |
+|---|---|---|---|---|
+| Cámara | Logitech C920 | Imagen a color | Sensor `camera` | H4 (ArUco), foto en cada punto de control |
+| Distancia ×3 | ST VL53L1X (ToF) | Distancia a un obstáculo, 4 cm a 4 m, cono de 27° | Sensor `gpu_lidar` de pocos rayos | H3 (detenerse ante obstáculos) |
+| IMU | Bosch BMI270 | Aceleración lineal y velocidad angular | Sensor `imu` | H1 (junto con los encoders) |
+| Encoders ×2 | Pololu 37D | Giro de cada llanta | **Ya simulados:** el plugin DiffDrive publica `/odom` y JointStatePublisher publica `/joint_states` | H1 |
+
+No se agregan sensores que el robot no tiene (por ejemplo, un lidar 2D), aunque facilitarían la navegación, para que la simulación sea fiel al hardware.
+
+### Conceptos: malla, link, joint y frame
+- **Malla** (*mesh*): archivo 3D (`.stl`, `.dae`) con la forma de una pieza, formada por triángulos. Solo es geometría: se dibuja y se usa para choques, pero no mide nada.
+- **Link**: una pieza rígida del robot en el URDF. Puede tener `<visual>` (la malla), `<collision>` y `<inertial>` (masa). Todo link tiene un **frame**, incluso si no tiene malla.
+- **Frame**: un origen con tres ejes. En RViz se dibujan como flechas: rojo = X, verde = Y, azul = Z. En ROS el robot usa X hacia adelante, Y a la izquierda y Z hacia arriba (REP 103).
+- **Joint**: la unión entre dos links (padre e hijo). Indica dónde queda el hijo respecto al padre (`<origin xyz rpy>`) y cómo se mueve: `fixed` (atornillado), `continuous` (gira sin límite, como las llantas), `revolute` (gira con límites) o `prismatic` (se desliza).
+- **Árbol de TF**: al encadenar los joints desde `base_link` se obtiene la posición de cada pieza respecto al robot.
+
+Links y joints existen tanto en URDF (formato de ROS) como en SDF (formato de Gazebo). Gazebo convierte el URDF a SDF al crear el robot y, en esa conversión, junta en un solo cuerpo todos los links unidos por joints `fixed` (*fixed joint lumping*), conservando la posición de los sensores. Los links sin `<inertial>` se descartan, por lo que los links de sensores llevan una masa simbólica.
+
+### Ubicación de los sensores
+#### El problema: los ejes del CAD
+En Gazebo, un sensor de distancia o una cámara **mide hacia el eje +X de su link**. sw2robot exportó cada pieza con el sistema de coordenadas con el que se dibujó en SolidWorks, no con la convención de ROS. Por ejemplo, para el ToF central:
+
+```
+ros2 run tf2_ros tf2_echo base_link CLM_VL53L1XV2_1
+
+Translation: [0.095, 0.003, 0.076]
+Matrix:                X_sensor  Y_sensor  Z_sensor
+            x robot     0.000    -0.000    -1.000    0.095
+            y robot    -0.000    -1.000     0.000    0.003
+            z robot    -1.000     0.000    -0.000    0.076
+```
+
+Las tres primeras columnas de la matriz indican hacia dónde apunta cada eje del sensor visto desde el robot: su **X apunta hacia abajo** y su Z hacia atrás (la cara del sensor mira hacia -Z, es decir, al frente). Si el sensor de Gazebo se pegara directamente a esta pieza, mediría el piso.
+
+> El RPY que imprime `tf2_echo` (125.8°, 90°, -54.2°) no es útil aquí: con un *pitch* de 90° el *roll* y el *yaw* se vuelven ambiguos (*gimbal lock*). La matriz es la forma confiable de leer la orientación.
+
+#### Medición
+Con el robot cargado en RViz (`display.launch.py`), se midió la posición y orientación de cada pieza respecto a `base_link`:
+```
+ros2 run tf2_ros tf2_echo base_link <nombre_del_link>
+```
+Los nombres de los links se obtienen del URDF (`grep -o '<link name="[^"]*"' urdf/robot_description.urdf`) y siguen el patrón `CLM_<pieza>_<copia>`. El número de copia no indica el lado; el signo de `y` sí (positivo = izquierda). Para la cámara se usó el vidrio de la lente (`Logitech_C920Glass`), cuyo eje Z sale de la lente.
+
+El ángulo de cada sensor se calculó con la dirección de su cara: `atan2(y, x)` para el giro horizontal y `atan2(-z, x)` para la inclinación de la cámara.
+
+![Ubicación de los sensores sobre las mallas del CAD](docs/img/colmibot_sensores.png)
+
+#### Resultados
+| Link nuevo | Pieza del CAD | `xyz` (m) | `rpy` (rad) | Orientación |
+|---|---|---|---|---|
+| `tof_center_link` | `CLM_VL53L1XV2_1` | 0.095 0.003 0.076 | 0 0 0 | Al frente |
+| `tof_left_link` | `CLM_VL53L1XV2_2` | 0.081 0.050 0.075 | 0 0 0.5236 | 30° a la izquierda |
+| `tof_right_link` | `CLM_VL53L1XV2_3` | 0.083 -0.045 0.076 | 0 0 -0.5236 | 30° a la derecha |
+| `imu_link` | `CLM_IMU_BMI270_1` | 0.059 0.001 0.055 | 0 0 0 | Alineada con el robot |
+| `camera_link` | `CLM_LogitechC920Montaj_1__Logitech_C920Glass_1` | 0.053 0.000 0.138 | 0 0.1066 0 | 6° hacia abajo |
+
+Observaciones:
+- **ToF en abanico:** los sensores laterales están girados exactamente ±30° (en el CAD, `0.5235987756` rad). Con 27° de apertura cada uno, los tres cubren unos 87° al frente.
+- **Altura de los ToF (~7.5 cm):** un obstáculo más bajo puede pasar por debajo de los rayos. El derrame de líquido no tiene altura, así que solo la cámara podría detectarlo.
+- **Cámara inclinada 6° hacia abajo** (*pitch* positivo baja la nariz según la regla de la mano derecha): a 13.8 cm de altura le permite ver más piso, donde estarán los obstáculos y los marcadores ArUco.
+- **IMU girada −90° en yaw** en el CAD (su X apunta a la derecha del robot). En la simulación se alinea con el robot, que es lo que esperan los paquetes de ROS; en el hardware real habrá que rotar las lecturas en el firmware o declarar el joint con `rpy="0 0 -1.5708"`.
+- **Pequeña asimetría** (±0.5 cm) entre los ToF laterales: se usan los valores reales del CAD, no los ideales.
+
+### Links de referencia para los sensores
+En lugar de modificar las piezas del CAD (que se siguen usando para dibujar el robot), se agrega **un link vacío por sensor**, como una "bandera" con la orientación correcta: misma posición que la pieza real, sin malla, con X apuntando hacia donde mide el sensor, y unido a `base_link` con un joint `fixed`.
+
+```xml
+<link name="tof_center_link">
+  <inertial>   <!-- masa simbólica para que Gazebo no descarte el link -->
+    <mass value="0.001"/>
+    <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7"/>
+  </inertial>
+</link>
+<joint name="tof_center_link_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="tof_center_link"/>
+  <origin xyz="0.095 0.003 0.076" rpy="0 0 0"/>
+</joint>
+```
+
+El robot se ve igual en RViz y en Gazebo; solo se agregan frames invisibles a los que después se les "pega" cada sensor de Gazebo (`<gazebo reference="tof_center_link">`).
+
+### Modificaciones al modelo
+*(En construcción).*
+
+### Arquitectura de comunicación
+*(En construcción).*
+
+### Comandos para ejecución
+*(En construcción).*
+
+### Problemas, soluciones y limitaciones
+- **`tf2_echo` no imprimía nada dentro de un ciclo `for` con `timeout` y `grep`**: cuando la salida de un programa va a otro (`|`), se acumula en un *buffer* y se pierde si el programa se corta antes de llenarlo.
+  **Solución:** correr `tf2_echo` directamente, uno por uno, y cortarlo con `Ctrl+C` (o forzar salida línea por línea con `stdbuf -oL`).
