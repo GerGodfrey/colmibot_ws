@@ -587,9 +587,9 @@ Con el robot quieto, `gz topic -e -t /imu -n 1` mostró:
 
 #### Hitos
 
-Cámara simulada publicando en Gazebo (gz topic -l muestra /camera/image_raw) (por verificar)
-Imagen recibida en ROS 2 y visible en rqt_image_view (por verificar)
-Detector de cajas (OpenCV) corriendo sobre la imagen simulada (por verificar)
+Cámara simulada publicando en Gazebo (gz topic -l muestra /camera/image_raw) 
+Imagen recibida en ROS 2 y visible en rqt_image_view 
+Detector de cajas (OpenCV) corriendo sobre la imagen simulada 
 
 #### Cómo llega la imagen de Gazebo a ROS 2
 
