@@ -584,7 +584,42 @@ Con el robot quieto, `gz topic -e -t /imu -n 1` mostró:
 *(Pendiente).*
 
 ### Sensor 3: Cámara Logitech C920
-*(Pendiente).*
+
+#### Hitos
+
+Cámara simulada publicando en Gazebo (gz topic -l muestra /camera/image_raw) 
+Imagen recibida en ROS 2 y visible en rqt_image_view 
+Detector de cajas (OpenCV) corriendo sobre la imagen simulada 
+
+#### Cómo llega la imagen de Gazebo a ROS 2
+
+Cadena: sensor camera en el URDF → tópico de Gazebo /camera/image_raw → ros_gz_bridge → sensor_msgs/msg/Image → nodo box_detector → cv_bridge → OpenCV.
+
+#### Modificaciones
+
+- `URDF`: nuevo camera_link + camera_link_joint en xyz="0.056 0 0.138" rpy="0 0.106 0".
+- `gz_bridge.yaml`: puentes para /camera/image_raw (Image) y /camera/camera_info (CameraInfo).
+colmibotbasics:
+- `box_detector.py`: el detector original, sin cambios.
+- `box_detector_node.py`: nodo nuevo; parámetros image_topic, show_windows, tuning (sliders HSV).
+- `setup.py`: ejecutable box_detector.
+- `package.xml`: dependencias cv_bridge, python3-opencv, python3-numpy.
+
+#### Cómo replicarlo
+
+- Dependencias: `sudo apt update && sudo apt install ros-jazzy-cv-bridge ros-jazzy-rqt-image-view`
+- Compilar con `--symlink-install`
+- Terminal 1: launch de `gazebo_worP.launch.py`
+- Terminal 2: `gz topic -l | grep camera`, `ros2 topic hz /camera/image_raw`, `rqt_image_view`.
+- Terminal 3: `ros2 run colmibotbasics box_detector`
+
+#### Resultados
+
+
+#### Problemas, soluciones y limitaciones
+
+- Puede que existan falsos positivos por el color predeterminado de las cajas (cualquier cosa café o naranja podría confundirse)
+- Cajas apiladas o juntas podrían detectarse como una sola caja
 
 ### Arquitectura de comunicación
 | Tópico | Tipo (ROS 2) | Dirección | Sensor |

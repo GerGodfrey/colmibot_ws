@@ -1207,5 +1207,46 @@
     <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu" />
   </gazebo>
 
+  <!-- Cámara Logitech C920 simulada.
+       Pose calculada a partir de la cadena de joints hasta
+       CLM_LogitechC920Montaj_1__Logitech_C920Glass_1:
+       lente en (0.053, 0, 0.138) respecto a base_link, mirando a +X
+       e inclinada ~6° hacia abajo (pitch = 0.106 rad).
+       Gazebo: el sensor de cámara mira a lo largo de su +X local. -->
+  <link name="camera_link">
+    <inertial>
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
+    </inertial>
+  </link>
+  <joint name="camera_link_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="camera_link" />
+    <origin xyz="0.056 0 0.138" rpy="0 0.106 0" />
+  </joint>
+
+  <gazebo reference="camera_link">
+    <sensor name="front_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <visualize>true</visualize>
+      <topic>/camera/image_raw</topic>
+      <gz_frame_id>camera_link</gz_frame_id>
+      <camera>
+        <!-- C920: ~70° FOV horizontal -->
+        <horizontal_fov>1.22</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>20.0</far>
+        </clip>
+      </camera>
+    </sensor>
+  </gazebo>
+
 
 </robot>
