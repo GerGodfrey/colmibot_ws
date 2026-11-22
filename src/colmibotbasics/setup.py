@@ -27,6 +27,7 @@ setup(
     'console_scripts': [
         'play_station_turtle_controller = colmibotbasics.play_station_turtle_controller:main',
         'colmibot_controller = colmibotbasics.colmibot_controller:main',
+        'box_detector = colmibotbasics.box_detector_node:main',
     ],
 },
 )
