@@ -580,8 +580,256 @@ Con el robot quieto, `gz topic -e -t /imu -n 1` mostró:
 - **IMU girada en el hardware**: en el CAD el chip está girado −90° en yaw. En la simulación se alineó con el robot; en el robot real habrá que rotar las lecturas en el firmware o declarar el joint con `rpy="0 0 -1.5708"`.
 - **Frecuencia en tiempo real limitada por la VM** (~49 Hz medidos en lugar de 100).
 
-### Sensor 2: ToF VL53L1X ×3
-*(Pendiente).*
+### Sensor 2: ToF VL53L1X ×3 ✅
+#### Hitos
+- [x] Links de referencia `tof_center_link`, `tof_left_link` y `tof_right_link` en la posición real de cada sensor, con X apuntando hacia donde mide (0°, +30° y −30°).
+- [x] Un sensor `gpu_lidar` por ToF: 9 rayos en 27°, rango de 4 cm a 4 m, ruido gaussiano y 20 Hz.
+- [x] Motor de render del mundo cambiado de `ogre` a `ogre2` (con `ogre`, Gazebo se cerraba en el primer render del sensor).
+- [x] Puentes `/tof/center/scan`, `/tof/left/scan` y `/tof/right/scan` de Gazebo a ROS 2 (`sensor_msgs/msg/LaserScan`).
+- [x] Verificado: las distancias coinciden con la geometría del escenario y bajan al acercar el robot; los tres scans se ven en RViz sobre los objetos correctos.
+- [x] Verificado junto con la cámara (Sensor 3): con `ogre2`, los cuatro sensores de render (cámara y 3 ToF) funcionan a la vez.
+
+#### Por qué un `gpu_lidar`
+Gazebo no tiene un sensor "ToF", así que se usa el que mide lo mismo. El VL53L1X emite un pulso infrarrojo y mide cuánto tarda en regresar (*time of flight*: distancia = velocidad de la luz × tiempo / 2). Un lidar hace exactamente eso, pero en muchas direcciones; en el fondo, un lidar es un ToF que barre. El `gpu_lidar` de Gazebo no simula luz ni tiempos: lanza rayos geométricos desde el link y devuelve la distancia al primer objeto que tocan. Para parecerse al VL53L1X se "encoge":
+
+| | Lidar típico | ToF simulado |
+|---|---|---|
+| Apertura | 360° | 27° (±0.2356 rad) |
+| Rayos | Cientos | 9 |
+| Rango | 10–30 m | 0.04–4.0 m |
+
+*gpu* significa que Gazebo calcula los rayos **dibujando la escena** desde el sensor y leyendo la profundidad de cada píxel. Por eso, a diferencia de la IMU, necesita el sistema de render (`gz-sim-sensors-system`, declarado en el mundo). En la VM ese "GPU" es en realidad la CPU (`LIBGL_ALWAYS_SOFTWARE=1`).
+
+Alternativas descartadas:
+- **Lidar por CPU (`type="lidar"`)**: no necesitaría render, pero Gazebo Harmonic no lo soporta (*"Sensor type LIDAR not supported yet"*); llegó en Gazebo Sim 10 (Jetty).
+- **Cámara de profundidad de pocos píxeles**: se parece más al cono real, pero también usa render y entrega una imagen que habría que convertir.
+- **`gpu_lidar` con varias filas**: aproxima mejor el cono, pero `LaserScan` es 2D y se perderían las filas extra.
+
+#### Cómo funcionan los rayos
+En cada lectura (20 por segundo de simulación), cada sensor lanza **9 rayos al mismo tiempo** en direcciones fijas, repartidas de forma pareja en sus 27°: uno cada 27° / 8 = **3.375°**. Cada rayo reporta por separado la distancia a lo primero que toca, o `inf` si no hay nada dentro de 4 m. Los ángulos son relativos al eje X del sensor; el giro de cada sensor lo da el `rpy` de su joint.
+
+| Rayo | Respecto al sensor | Izquierdo (respecto al robot) | Central | Derecho |
+|---|---|---|---|---|
+| 0 | −13.5° | +16.5° | −13.5° | −43.5° |
+| 4 | 0° | **+30°** | **0°** | **−30°** |
+| 8 | +13.5° | +43.5° | +13.5° | −16.5° |
+
+Juntos cubren de −43.5° a +43.5° (87° al frente). Los rayos son líneas, no conos, y forman un abanico plano a ~7.5 cm del piso.
+
+![Abanico de los 3 ToF y lecturas en el escenario](docs/img/colmibot_tof_rayos.png)
+
+#### Modificaciones
+**1. `urdf/robot_description.urdf`**, al final, después del bloque de la cámara (Sensor 3) y antes de `</robot>`. Bloque del ToF central:
+```xml
+<!-- ToF central VL53L1X: mira al frente -->
+<link name="tof_center_link">
+  <inertial>
+    <mass value="0.001" />
+    <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
+  </inertial>
+</link>
+<joint name="tof_center_link_joint" type="fixed">
+  <parent link="base_link" />
+  <child link="tof_center_link" />
+  <origin xyz="0.095 0.003 0.076" rpy="0 0 0" />
+</joint>
+
+<gazebo reference="tof_center_link">
+  <sensor name="tof_center" type="gpu_lidar">
+    <topic>/tof/center/scan</topic>
+    <gz_frame_id>tof_center_link</gz_frame_id>
+    <update_rate>20</update_rate>
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <lidar>
+      <scan>
+        <horizontal>
+          <samples>9</samples>
+          <resolution>1</resolution>
+          <min_angle>-0.2356</min_angle>
+          <max_angle>0.2356</max_angle>
+        </horizontal>
+        <vertical>
+          <samples>1</samples>
+          <resolution>1</resolution>
+          <min_angle>0</min_angle>
+          <max_angle>0</max_angle>
+        </vertical>
+      </scan>
+      <range>
+        <min>0.04</min>
+        <max>4.0</max>
+        <resolution>0.001</resolution>
+      </range>
+      <noise>
+        <type>gaussian</type>
+        <mean>0</mean>
+        <stddev>0.005</stddev>
+      </noise>
+    </lidar>
+  </sensor>
+</gazebo>
+```
+Los bloques del izquierdo y el derecho son iguales; solo cambian el nombre (link, sensor y `gz_frame_id`), el `<origin>` y el `<topic>`:
+
+| Sensor | Link | `<origin>` | `<topic>` |
+|---|---|---|---|
+| Central | `tof_center_link` | `xyz="0.095 0.003 0.076" rpy="0 0 0"` | `/tof/center/scan` |
+| Izquierdo | `tof_left_link` | `xyz="0.081 0.050 0.075" rpy="0 0 0.5236"` | `/tof/left/scan` |
+| Derecho | `tof_right_link` | `xyz="0.083 -0.045 0.076" rpy="0 0 -0.5236"` | `/tof/right/scan` |
+
+| Elemento | Para qué |
+|---|---|
+| `type="gpu_lidar"` | Sensor de rayos calculado con render. |
+| `<horizontal>` | 9 rayos entre −13.5° y +13.5°: los 27° de apertura del VL53L1X. Relativos al link, por eso no cambian entre sensores. |
+| `<vertical>` | Una sola fila: abanico plano, que es lo que espera `LaserScan`. |
+| `<range>` | 4 cm a 4 m, el rango del VL53L1X. Fuera de eso el rayo devuelve `inf` (o `-inf` si está demasiado cerca). |
+| `<noise>` | ±5 mm de ruido gaussiano por lectura. |
+| `<update_rate>` | 20 Hz. El VL53L1X real llega a ~50 Hz; se usa 20 porque cada lectura es un render y la VM no tiene GPU. |
+| `<visualize>` | Permite dibujar los rayos en la GUI de Gazebo. |
+| `<topic>`, `<gz_frame_id>` | Igual que en la IMU: tópico de Gazebo y `frame_id` que RViz encuentra en el árbol de TF. |
+
+No se agrega ningún plugin al URDF: el sistema que atiende a los sensores de render (`gz-sim-sensors-system`) ya está en el mundo.
+
+**2. `worlds/prueba.sdf`**, línea 14, motor de render de los sensores:
+```xml
+<plugin name='gz::sim::systems::Sensors' filename='gz-sim-sensors-system'>
+  <render_engine>ogre2</render_engine>   <!-- antes: ogre -->
+</plugin>
+```
+Ver *Problemas* más abajo. Este cambio también aplica a la cámara, que es otro sensor de render: con `ogre2`, `gz topic -e -t /camera/image_raw -n 1 | grep -v "^data"` muestra la imagen de 640×480 sin que Gazebo se cierre.
+
+**3. `config/gz_bridge.yaml`**, al final, después de `/camera/camera_info`:
+```yaml
+- ros_topic_name: "/tof/center/scan"
+  gz_topic_name: "/tof/center/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/tof/left/scan"
+  gz_topic_name: "/tof/left/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/tof/right/scan"
+  gz_topic_name: "/tof/right/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+```
+
+#### Cómo replicarlo
+Requisitos: los mismos que la IMU (VM con al menos 6 GB de RAM, ROS 2 Jazzy, Gazebo Harmonic, `teleop_twist_keyboard`).
+
+1. Bajar los cambios, compilar y lanzar la simulación (terminal 1):
+   ```bash
+   cd ~/Documents/colmibot_ws
+   git pull
+   colcon build --symlink-install
+   source install/setup.bash
+   export LIBGL_ALWAYS_SOFTWARE=1
+   ros2 launch robot_description gazebo_worP.launch.py 2>&1 | tee ~/log_tof.txt
+   ```
+2. Verificar en otra terminal, primero del lado de Gazebo y después del de ROS, sin mover el robot:
+
+   | Paso | Comando | Resultado esperado |
+   |---|---|---|
+   | Los sensores existen en Gazebo | `gz topic -l \| grep -E "scan$\|camera"` | `/tof/center/scan`, `/tof/left/scan`, `/tof/right/scan` y los de la cámara |
+   | El sensor calcula | `gz topic -e -t /tof/center/scan -n 1 \| grep ranges` | 9 distancias de ~1.75–1.81 m |
+   | El puente los creó | `grep "Creating.*tof" ~/log_tof.txt` | 3 líneas `Creating GZ->ROS Bridge: [/tof/...]` |
+   | Llegan a ROS | `ros2 topic echo /tof/left/scan --once` | `frame_id: tof_left_link`, algunos rayos en `.inf` |
+   | Frecuencia | `ros2 topic hz /tof/center/scan` | ~20 Hz × *real time factor* |
+
+   `gz topic` muestra los tópicos de Gazebo (antes del puente) y `ros2 topic`, los de ROS 2 (después del puente). Si `gz topic` muestra datos pero `ros2 topic` no, el problema está en el puente.
+3. Ver los scans en RViz (terminal 2):
+   ```bash
+   ros2 run rviz2 rviz2 --ros-args -p use_sim_time:=true
+   ```
+   - **Fixed Frame**: `odom`.
+   - **Add → RobotModel**, con *Description Topic* = `/robot_description`.
+   - **Add → By topic** → `/tof/center/scan`, `/tof/left/scan` y `/tof/right/scan` (LaserScan). Conviene *Size (m)* = `0.05` y *Style* = `Spheres`.
+   - Verificar abajo, en el panel *Time*, que `ROS Time` sea el tiempo de Gazebo (un número chico) y no igual a `Wall Time`.
+4. Probar la respuesta al movimiento (terminal 3):
+   ```bash
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p speed:=0.1 -p turn:=0.5
+   ```
+   Avanzar con `i` y detener con `k`, revisar cuánto se movió con `ros2 topic echo /odom --once | grep -A3 position` y volver a leer el ToF central. Ojo: `/odom` empieza en 0 (mide desde donde apareció el robot), no en x = −1.
+
+#### Resultados
+**Qué contiene cada mensaje.** Lo que imprime `gz topic -e -t /tof/center/scan -n 1` es un `gz.msgs.LaserScan`; el puente lo traduce a `sensor_msgs/msg/LaserScan`:
+
+| Campo (Gazebo → ROS 2) | Valor | Significado |
+|---|---|---|
+| `header.stamp` | p. ej. 23.364 s | Tiempo **de simulación** de la lectura |
+| `frame_id` | `tof_center_link` | Desde qué frame se midió. Lo asigna `<gz_frame_id>`; RViz lo usa para ubicar los puntos |
+| `world_pose` → (no existe en ROS) | 0.095 0.003 0.076 | La pose del sensor respecto al robot (igual al `<origin>`). ROS la obtiene del árbol de TF |
+| `angle_min` / `angle_max` | ±0.2356 | Primer y último rayo: −13.5° (derecha) a +13.5° (izquierda) |
+| `angle_step` → `angle_increment` | 0.0589 | 3.375° entre rayos |
+| `range_min` / `range_max` | 0.04 / 4 | Rango válido en metros |
+| `count` → (no existe en ROS) | 9 | En ROS se deduce del largo de `ranges` |
+| `ranges` | 9 valores | Distancia en metros al primer objeto que toca cada rayo; `ranges[i]` corresponde al ángulo `angle_min + i·angle_increment`. Sin choque: `inf` (en ROS se imprime `.inf`) |
+| `intensities` | 0 | Gazebo no simula la intensidad del rebote |
+| — → `time_increment`, `scan_time` | 0 | Importan en lidares que giran; aquí todos los rayos son simultáneos |
+
+En ROS, los ángulos aparecen como `0.23559999465942383`: `LaserScan` guarda los números en `float32` (~7 dígitos de precisión), no es un error.
+
+**ToF central, robot en la posición inicial.** El sensor queda en x = −1.0 + 0.095 = −0.905 y la cara frontal de las cajas en x = 1.0 − 0.15 = 0.85, así que se esperaba 1.755 m al frente. Como las caras de las tres cajas están en el mismo plano, los rayos inclinados recorren más distancia hasta la misma "pared": d = 1.755 / cos θ.
+
+| Rayo | Ángulo | Esperado (m) | Medido (m) |
+|---|---|---|---|
+| 0 / 8 | ∓13.5° | 1.805 | 1.799 / 1.805 |
+| 1 / 7 | ∓10.1° | 1.782 | 1.789 / 1.787 |
+| 2 / 6 | ∓6.75° | 1.767 | 1.779 / 1.768 |
+| 3 / 5 | ∓3.4° | 1.758 | 1.755 / 1.754 |
+| 4 | 0° | 1.755 | 1.764 |
+
+**ToF central tras avanzar 0.745 m** (medido en `/odom`): se esperaba 1.755 − 0.745 ≈ 1.01 m y se midió **1.019 m**; las orillas dieron 1.053 y 1.057 m (esperado 1.039). La diferencia entre orilla y centro bajó de ~4 a ~3.5 cm porque es proporcional a la distancia: d·(1/cos θ − 1). En las dos lecturas hubo un desfase de ~9 mm con el mismo signo (no es ruido, que cambia de signo): las cajas y el robot se asientan un poco al caer. Para decidir si frenar, 1 cm es irrelevante.
+
+**Un rayo que se coló entre dos cajas.** En esa segunda lectura, el rayo 7 marcó **1.115 m**, casi 10 cm más que sus vecinos. A ~1 m, ese rayo (+10.1°) cae en y ≈ 0.003 + 1.01 · tan 10.1° ≈ 0.18 m, justo en el hueco de 3 cm entre `box_2` (termina en y = 0.17) y `box_3` (empieza en y = 0.20). Pasa por el hueco y choca más adentro, contra el costado de `box_3`: (1.01 + 0.095) / cos 10.1° ≈ 1.12 m. A 1.76 m no ocurría porque ese rayo caía en y ≈ 0.31, en plena cara de `box_3`.
+
+**ToF laterales, robot en la posición inicial:**
+
+| Sensor | Rayos que chocan | Distancias (m) | Con qué | Rayos en `inf` |
+|---|---|---|---|---|
+| Izquierdo (+30°) | 5, 7 y 8 | 2.86, 2.44, 3.30 | Tarima en (1.0, 2.0). Los rayos 5 y 7 pegan en su borde frontal (y ≈ 1.62); el 8 entra por una abertura y choca más adentro | 0–4 (pasan entre las cajas y la tarima) y 6 (entra por una abertura de la tarima) |
+| Derecho (−30°) | 1, 2 y 3 | 2.50, 2.24, 2.36 | Piernas de Rescue Randy en (1.0, −1.55); a ~7.5 cm de altura solo cuentan las piernas | 0 y 4–8 |
+
+Antes de medir se predijo que Randy (a ~38° a la derecha, ~2.4 m) caería en los rayos 1 y 2 del derecho; salió en el 1, 2 y 3 porque tiene ancho.
+
+**Frecuencia:** `ros2 topic hz` midió **~14–15 Hz** en los tres tópicos. Publican a 20 Hz de simulación y `hz` mide con el reloj real; 14.8 / 20 ≈ 0.74 equivale al *real time factor* de ese momento. Los tres comparten la frecuencia porque se calculan en el mismo ciclo de render. El tiempo entre mensajes varió de 0.056 a 0.13 s (la VM reparte la CPU entre física, render y los demás procesos). A 0.1 m/s, el robot avanza unos 7 mm entre lecturas: suficiente para frenar a tiempo.
+
+**RViz:** de los 27 rayos, se dibujan los **15** que chocaron (los `inf` no se dibujan), en tres grupos: 3 a la izquierda (tarima), 9 en línea recta al centro (la "pared" de cajas) y 3 a la derecha (Randy). Es el mismo patrón que se calculó a partir de `gz topic`, ahora armado solo con el `LaserScan`, el `frame_id` y el árbol de TF: confirma que la cadena completa (sensor → puente → TF → visualización) funciona.
+
+![Los 3 ToF en RViz](docs/img/tof_rviz.png)
+
+Con la cámara y los 3 ToF activos, RViz corre a **~7 fps** en la VM: todo el render (Gazebo, sus sensores y RViz) lo hace la CPU.
+
+**Para el paro por obstáculo (H3).** El VL53L1X real entrega **un solo número** por sensor; el simulado entrega 9. Si se toma el **mínimo** de los 9 rayos, los huecos no engañan al robot: entre las cajas, el mínimo seguía siendo ~1.02 m aunque un rayo marcara 1.115; en la tarima, 2.44 m aunque otros rayos dieran `inf`. Con eso, cada grupo de RViz se reduce a 1.76 m (centro), 2.44 m (izquierdo) y 2.24 m (derecho). Ese será el siguiente nodo: convertir cada `LaserScan` en un `sensor_msgs/Range`, el mismo tipo de dato que mandará el ESP32 real. Al filtrar, hay que respetar la convención de ROS (REP 117): `+inf` significa "nada dentro del rango" y se ignora solo al tomar el mínimo; `-inf` significa "algo más cerca que 4 cm" y debe tratarse como obstáculo, no descartarse como lectura inválida.
+
+#### Problemas, soluciones y limitaciones
+- **Gazebo se cerraba en cuanto se leía el sensor** (`gz topic -e -t /tof/center/scan`). Los sensores de render son "perezosos": solo dibujan cuando alguien se suscribe a su tópico, así que el cierre ocurrió en el **primer render**. El *backtrace* del log mostró `__assert_fail` → `abort` dentro de `libOgreMain.so.1.9.0` (`Ogre::OctreeNode::_updateBounds`) y terminaba en `Aborted`: una verificación interna de **Ogre 1.9** fallaba. No era falta de RAM (eso se ve como `Killed` o `exit code -9`). El mundo pedía `<render_engine>ogre</render_engine>`, Ogre 1.9, un consejo común para VMs sin GPU; ese motor falla con render por software en ARM (la VM corre en una Mac M2). La GUI no se caía porque usa ogre2, y hasta ahora ningún sensor había usado el render del servidor (la IMU no renderiza).
+  **Solución:** `<render_engine>ogre2</render_engine>` en `prueba.sdf`. Con ogre2 los sensores funcionan y además la escena de Gazebo se ve mejor. Para diagnosticar: si Gazebo se cae al hacer `gz topic -e` de un sensor de render, el problema es el render; leer el *backtrace*: `Aborted` con Ogre = motor de render; `Killed`/`-9` = RAM.
+- **`ros2 topic echo /tof/center/scan` respondía "Could not determine the type for the passed topic"**: el launch no se había reiniciado después de editar `gz_bridge.yaml`, y el puente solo lee el YAML al arrancar.
+- **RViz no mostraba los scans**, por tres causas sucesivas:
+  1. *Fixed Frame* en `map`, que nadie publica en esta simulación (*"Frame [map] does not exist"*). **Solución:** `odom`. RViz lo vuelve a poner en `map` cada vez que se abre sin un archivo de configuración.
+  2. RViz usaba el reloj real: `ROS Time` era igual a `Wall Time`. La causa fue un typo, `use_sime_time`. ROS acepta cualquier nombre de parámetro sin avisar, así que creó uno que nadie usa. **Solución:** `--ros-args -p use_sim_time:=true` y comprobar en el panel *Time* que `ROS Time` sea el tiempo de Gazebo.
+  3. *RobotModel* sin *Description Topic* (se pierde al reabrir RViz). **Solución:** `/robot_description`.
+- **Dos simulaciones a la vez.** Una terminal olvidada con otro launch provocó `Moved backwards in time, re-publishing joint transforms!` (dos Gazebo publicando su propio `/clock`) y que el robot apareciera con un URDF viejo (el `create` tomó el `/robot_description` del `robot_state_publisher` anterior). Se notó porque los avisos `gz_frame_id` listaban sensores que el URDF actual no tenía.
+  **Solución:** cerrar todo y, antes de lanzar, comprobar que `pgrep -af "gz sim"` y `ros2 node list` salgan vacíos.
+- **Avisos que no son problema:**
+  - `gz_frame_id ... not defined in SDF. Copying[gz_frame_id] as children of [sensor]`: el estándar SDF no define esa etiqueta, pero los sensores de Gazebo sí la leen (ya salía con la IMU).
+  - El mismo aviso dice `link[@name="base_link"]/sensor[@name="tof_center"]`: por el *fixed joint lumping*, Gazebo movió el sensor a `base_link` conservando su pose; `gz_frame_id` mantiene `tof_center_link` en los mensajes.
+  - `libEGL warning ... software rendering`, `VMware: No 3D enabled`: render por software, esperado en la VM.
+  - `WARNING: topic [...] does not appear to be published yet` al empezar `ros2 topic hz`: el puente solo pide datos a Gazebo cuando alguien se suscribe y tarda un momento.
+  - `discarding message because the queue is full` en RViz, ocasional: RViz descarta algún scan cuando la TF de ese instante todavía no llega.
+  - `gz topic -n 1` a veces imprime dos mensajes; sirve para ver que el ruido es de milímetros.
+
+**Limitaciones**
+- **Abanico plano contra cono real.** El VL53L1X ve un cono "relleno" y entrega un valor; el simulado da 9 rayos infinitamente delgados. Un rayo puede colarse por un hueco de 3 cm (entre cajas, en las aberturas de la tarima) que el sensor real probablemente no vería. Se compensa tomando el mínimo.
+- **Altura fija (~7.5 cm).** Un obstáculo más bajo pasa por debajo de los rayos. El derrame de líquido no tiene altura ni colisión: solo la cámara podrá detectarlo.
+- **Superficies ideales.** Al sensor real le afectan el color y el brillo de la superficie, la luz ambiente y los objetos transparentes; al simulado no: detecta perfecto cualquier objeto con geometría visual. `intensities` siempre vale 0.
+- **Frecuencia limitada por la VM**: ~14–15 Hz en tiempo real (20 Hz de simulación), contra hasta 50 Hz del sensor real. Con la cámara y los 3 ToF activos, todo el render es por CPU y RViz baja a ~7 fps.
+- **Huecos de cobertura**: 3° sin rayos entre cada lateral y el central (de 13.5° a 16.5° a cada lado).
 
 ### Sensor 3: Cámara Logitech C920
 
@@ -625,7 +873,7 @@ colmibotbasics:
 | Tópico | Tipo (ROS 2) | Dirección | Sensor |
 |---|---|---|---|
 | `/imu` | `sensor_msgs/msg/Imu` | Gazebo → ROS 2 | IMU ✅ |
-| `/tof/{center,left,right}/scan` | `sensor_msgs/msg/LaserScan` | Gazebo → ROS 2 | ToF (pendiente) |
+| `/tof/{center,left,right}/scan` | `sensor_msgs/msg/LaserScan` | Gazebo → ROS 2 | ToF ✅ |
 | `/camera/image_raw`, `/camera/camera_info` | `sensor_msgs/msg/Image`, `CameraInfo` | Gazebo → ROS 2 | Cámara (pendiente) |
 
 ### Problemas generales
