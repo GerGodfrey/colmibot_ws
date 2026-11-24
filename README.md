@@ -879,3 +879,47 @@ colmibotbasics:
 ### Problemas generales
 - **`tf2_echo` no imprimía nada dentro de un ciclo `for` con `timeout` y `grep`**: cuando la salida de un programa va a otro (`|`), se acumula en un *buffer* y se pierde si el programa se corta antes de llenarlo.
   **Solución:** correr `tf2_echo` directamente, uno por uno, y cortarlo con `Ctrl+C` (o forzar salida línea por línea con `stdbuf -oL`).
+
+## Escenarios
+
+### Escenario 1
+
+#### Descripción del escenario
+
+Entorno de simulación ligero en Gazebo (`escenario1.sdf`) que representa un almacén de $16 \times 10\text{ m}$ con pasillos de $2\text{ m}$ de ancho, diseñado con primitivas geométricas estáticas para optimizar el consumo de memoria y gráficos integrados.
+
+- **Área de almacenamiento:** 16 grupos de cajas apiladas en dos niveles ($60\text{ cm}$ de altura) distribuidos en una franja superior (5 grupos), una inferior (6 grupos), una izquierda (3 grupos) y dos islas centrales (2 grupos cada una), montados sobre pallets comerciales sólidos de $1.20 \times 0.80 \times 0.14\text{ m}$.
+- **Zona de empaquetamiento ($7 \times 4\text{ m}$):** Dos bandas transportadoras paralelas, un arco de emplayado con rollo de film, una estación etiquetadora, una mesa final de clasificación y una tarima de recepción.
+- **Robot (Colmibot):** Aparece en la esquina superior derecha ($X = 6.5\text{ m}, Y = 4.5\text{ m}$) con orientación inicial de $-90^\circ$ ($-1.5708\text{ rad}$) apuntando hacia el interior del almacén, con cámara frontal, IMU y 3 sensores ToF activos.
+
+#### Ejecución del escenario
+
+1. Compilar el paquete con enlaces simbólicos y cargar el entorno:
+
+   ```bash
+   cd ~/colmibot_ws
+   colcon build --packages-select robot_description --symlink-install
+   source install/setup.bash
+   ```
+
+2. Lanzar la simulación completa (mundo, robot, sensores y puente ROS 2):
+
+   ```bash
+   ros2 launch robot_description gazebo_escenario1.launch.py
+   ```
+
+3. *(Opcional)* Visualizar la cámara del robot en otra terminal:
+
+   ```bash
+   ros2 run rqt_image_view rqt_image_view
+   ```
+
+   *(Seleccionar el tópico `/camera/image_raw`)*.
+
+#### Problemas y soluciones
+
+- **Fallo de renderizado de sensores (`ogre`):** El plugin de sensores de Gazebo Sim requiere `ogre2` para publicar imágenes y datos LiDAR/ToF; se configuró `<render_engine>ogre2</render_engine>` dentro de `escenario1.sdf`.
+- **Alto consumo de recursos por mallas externas:** Importar modelos detallados como `model://pallet` sobrecarga la GPU integrada; se sustituyeron los pallets y la maquinaria por primitivas `<box>` y `<cylinder>` estáticas.
+- **Mallas del robot no encontradas con `--symlink-install`:** Gazebo no resolvía `package://robot_description/meshes/...` al usar enlaces simbólicos (`Unable to find file with URI`). Se solucionó en `gazebo_escenario1.launch.py` reemplazando dinámicamente `package://robot_description` por `file://{pkg}` al leer el URDF.
+- **Orientación inicial hacia la pared:** El robot aparecía mirando hacia los pallets superiores; se ajustó el ángulo de orientación inicial.
+

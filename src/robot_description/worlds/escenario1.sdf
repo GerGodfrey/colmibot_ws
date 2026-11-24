@@ -1,0 +1,452 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="empty">
+    <!-- Configuración física ligera -->
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- Plugins esenciales del sistema -->
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics" />
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands" />
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster" />
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <!-- Iluminación limpia sin sombras pesadas -->
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.3 0.3 -0.9</direction>
+    </light>
+
+    <!-- PISO LISO (16x10 m) -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>20 14</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>16 10</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.82 0.84 0.86 1</ambient>
+            <diffuse>0.82 0.84 0.86 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================= PAREDES PERIMETRALES (16x10 m, altura 1.2 m) ================= -->
+    <model name="paredes_almacen">
+      <static>true</static>
+      <link name="pared_norte">
+        <pose>0 5.05 0.6 0 0 0</pose>
+        <collision name="col"><geometry><box><size>16.2 0.1 1.2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>16.2 0.1 1.2</size></box></geometry>
+          <material><ambient>0.55 0.58 0.62 1</ambient><diffuse>0.55 0.58 0.62 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="pared_sur">
+        <pose>0 -5.05 0.6 0 0 0</pose>
+        <collision name="col"><geometry><box><size>16.2 0.1 1.2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>16.2 0.1 1.2</size></box></geometry>
+          <material><ambient>0.55 0.58 0.62 1</ambient><diffuse>0.55 0.58 0.62 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="pared_oeste">
+        <pose>-8.05 0 0.6 0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.1 10.0 1.2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.1 10.0 1.2</size></box></geometry>
+          <material><ambient>0.55 0.58 0.62 1</ambient><diffuse>0.55 0.58 0.62 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="pared_este_sup">
+        <pose>8.05 4.5 0.6 0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.1 1.0 1.2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.1 1.0 1.2</size></box></geometry>
+          <material><ambient>0.55 0.58 0.62 1</ambient><diffuse>0.55 0.58 0.62 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="pared_este_centro">
+        <pose>8.05 0.0 0.6 0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.1 4.0 1.2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.1 4.0 1.2</size></box></geometry>
+          <material><ambient>0.55 0.58 0.62 1</ambient><diffuse>0.55 0.58 0.62 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="pared_este_inf">
+        <pose>8.05 -4.5 0.6 0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.1 1.0 1.2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.1 1.0 1.2</size></box></geometry>
+          <material><ambient>0.55 0.58 0.62 1</ambient><diffuse>0.55 0.58 0.62 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================= ZONA DE EMPAQUETAMIENTO (X=[1..8], Y=[-2..2]) ================= -->
+    <model name="zona_empaquetamiento">
+      <static>true</static>
+
+      <!-- Tarima baja de recepción/entrega frente al pasillo central -->
+      <link name="tarima_recepcion">
+        <pose>1.5 0.0 0.07 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.8 1.2 0.14</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.8 1.2 0.14</size></box></geometry>
+          <material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- BANDA TRANSPORTADORA 1 (Norte, Y = +1.05, largo 4.4 m) -->
+      <link name="banda1_estructura">
+        <pose>4.5 1.05 0.30 0 0 0</pose>
+        <collision name="c"><geometry><box><size>4.4 0.75 0.60</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>4.4 0.75 0.60</size></box></geometry>
+          <material><ambient>0.42 0.46 0.50 1</ambient><diffuse>0.42 0.46 0.50 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="banda1_cinta">
+        <pose>4.5 1.05 0.615 0 0 0</pose>
+        <collision name="c"><geometry><box><size>4.42 0.65 0.03</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>4.42 0.65 0.03</size></box></geometry>
+          <material><ambient>0.18 0.20 0.22 1</ambient><diffuse>0.18 0.20 0.22 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- Máquina Arco de Emplayado / Selladora sobre Banda 1 (X = 4.6, Y = 1.05) -->
+      <link name="arco_poste_izq">
+        <pose>4.6 1.48 0.85 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.35 0.12 1.70</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.35 0.12 1.70</size></box></geometry>
+          <material><ambient>0.88 0.42 0.10 1</ambient><diffuse>0.88 0.42 0.10 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="arco_poste_der">
+        <pose>4.6 0.62 0.85 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.35 0.12 1.70</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.35 0.12 1.70</size></box></geometry>
+          <material><ambient>0.88 0.42 0.10 1</ambient><diffuse>0.88 0.42 0.10 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="arco_puente_sup">
+        <pose>4.6 1.05 1.62 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.40 0.98 0.18</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.40 0.98 0.18</size></box></geometry>
+          <material><ambient>0.88 0.42 0.10 1</ambient><diffuse>0.88 0.42 0.10 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="arco_rollo_film">
+        <pose>4.6 1.05 1.45 1.5708 0 0</pose>
+        <visual name="v"><geometry><cylinder><radius>0.07</radius><length>0.70</length></cylinder></geometry>
+          <material><ambient>0.92 0.94 0.96 1</ambient><diffuse>0.92 0.94 0.96 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- Cajas viajando sobre Banda 1 -->
+      <link name="b1_caja_1">
+        <pose>3.1 1.05 0.78 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.40 0.30 0.30</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.40 0.30 0.30</size></box></geometry>
+          <material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="b1_caja_2">
+        <pose>5.8 1.05 0.78 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.30 0.30 0.30</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.30 0.30 0.30</size></box></geometry>
+          <material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- BANDA TRANSPORTADORA 2 (Sur, Y = -1.05, largo 4.4 m) -->
+      <link name="banda2_estructura">
+        <pose>4.5 -1.05 0.30 0 0 0</pose>
+        <collision name="c"><geometry><box><size>4.4 0.75 0.60</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>4.4 0.75 0.60</size></box></geometry>
+          <material><ambient>0.42 0.46 0.50 1</ambient><diffuse>0.42 0.46 0.50 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="banda2_cinta">
+        <pose>4.5 -1.05 0.615 0 0 0</pose>
+        <collision name="c"><geometry><box><size>4.42 0.65 0.03</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>4.42 0.65 0.03</size></box></geometry>
+          <material><ambient>0.18 0.20 0.22 1</ambient><diffuse>0.18 0.20 0.22 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- Estación / Brazo Etiquetador junto a Banda 2 -->
+      <link name="etiquetadora_base">
+        <pose>4.8 -1.62 0.55 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.45 0.35 1.10</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.45 0.35 1.10</size></box></geometry>
+          <material><ambient>0.85 0.68 0.12 1</ambient><diffuse>0.85 0.68 0.12 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="etiquetadora_brazo">
+        <pose>4.8 -1.25 1.05 0 0 0</pose>
+        <visual name="v"><geometry><box><size>0.22 0.60 0.14</size></box></geometry>
+          <material><ambient>0.25 0.28 0.32 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- Cajas sobre Banda 2 -->
+      <link name="b2_caja_1">
+        <pose>3.6 -1.05 0.78 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.30 0.30 0.30</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.30 0.30 0.30</size></box></geometry>
+          <material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="b2_caja_2">
+        <pose>5.4 -1.05 0.78 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.40 0.30 0.30</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.40 0.30 0.30</size></box></geometry>
+          <material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- Mesa final de clasificación junto a pared Este -->
+      <link name="mesa_clasificacion">
+        <pose>7.45 0.0 0.35 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.85 3.4 0.70</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.85 3.4 0.70</size></box></geometry>
+          <material><ambient>0.48 0.52 0.56 1</ambient><diffuse>0.48 0.52 0.56 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="mesa_caja_1">
+        <pose>7.45 0.85 0.85 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.30 0.40 0.30</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.30 0.40 0.30</size></box></geometry>
+          <material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="mesa_caja_2">
+        <pose>7.45 -0.85 0.85 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.30 0.30 0.30</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.30 0.30 0.30</size></box></geometry>
+          <material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================= GRUPOS DE CAJAS CON PALLET COMERCIAL (1.20 x 0.80 x 0.14 m) ================= -->
+
+    <!-- === FRANJA SUPERIOR (Y = 4.5 m, 5 grupos separados 1.5 m) === -->
+    <model name="grupo_sup_1">
+      <static>true</static><pose>-7.0 4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_sup_2">
+      <static>true</static><pose>-4.5 4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_sup_3">
+      <static>true</static><pose>-2.0 4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_sup_4">
+      <static>true</static><pose>0.5 4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_sup_5">
+      <static>true</static><pose>3.0 4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <!-- === FRANJA INFERIOR (Y = -4.5 m, 6 grupos separados 1.5 m) === -->
+    <model name="grupo_inf_1">
+      <static>true</static><pose>-6.75 -4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_inf_2">
+      <static>true</static><pose>-4.25 -4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_inf_3">
+      <static>true</static><pose>-1.75 -4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_inf_4">
+      <static>true</static><pose>0.75 -4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_inf_5">
+      <static>true</static><pose>3.25 -4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_inf_6">
+      <static>true</static><pose>5.75 -4.5 0 0 0 0</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <!-- === FRANJA IZQUIERDA (X = -7.5 m, largo 8 m, 3 grupos rotados 90° separados 1.5 m) === -->
+    <model name="grupo_izq_1">
+      <static>true</static><pose>-7.5 2.5 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_izq_2">
+      <static>true</static><pose>-7.5 0.0 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_izq_3">
+      <static>true</static><pose>-7.5 -2.5 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <!-- === ISLA CENTRAL 1 (X = -4.5 m, largo 4 m, 2 grupos separados 1.5 m) === -->
+    <model name="grupo_isla1_1">
+      <static>true</static><pose>-4.5 1.25 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_isla1_2">
+      <static>true</static><pose>-4.5 -1.25 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <!-- === ISLA CENTRAL 2 (X = -1.5 m, largo 4 m, 2 grupos separados 1.5 m) === -->
+    <model name="grupo_isla2_1">
+      <static>true</static><pose>-1.5 1.25 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+    <model name="grupo_isla2_2">
+      <static>true</static><pose>-1.5 -1.25 0 0 0 1.5707963</pose>
+      <link name="tarima"><pose>0 0 0.07 0 0 0</pose><collision name="c"><geometry><box><size>1.20 0.80 0.14</size></box></geometry></collision><visual name="v"><geometry><box><size>1.20 0.80 0.14</size></box></geometry><material><ambient>0.38 0.25 0.14 1</ambient><diffuse>0.38 0.25 0.14 1</diffuse></material></visual></link>
+      <link name="b1"><pose>-0.30 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+      <link name="b2"><pose>0.05 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="b3"><pose>0.35 0 0.29 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t1"><pose>-0.35 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.65 0.47 0.29 1</ambient><diffuse>0.65 0.47 0.29 1</diffuse></material></visual></link>
+      <link name="t2"><pose>-0.05 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.298 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.298 0.3 0.298</size></box></geometry><material><ambient>0.76 0.58 0.38 1</ambient><diffuse>0.76 0.58 0.38 1</diffuse></material></visual></link>
+      <link name="t3"><pose>0.30 0 0.59 0 0 0</pose><collision name="c"><geometry><box><size>0.398 0.3 0.298</size></box></geometry></collision><visual name="v"><geometry><box><size>0.398 0.3 0.298</size></box></geometry><material><ambient>0.72 0.54 0.35 1</ambient><diffuse>0.72 0.54 0.35 1</diffuse></material></visual></link>
+    </model>
+
+  </world>
+</sdf>
