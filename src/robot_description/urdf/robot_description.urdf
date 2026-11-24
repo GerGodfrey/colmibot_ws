@@ -1248,5 +1248,154 @@
     </sensor>
   </gazebo>
 
+    <!-- ================= ToF VL53L1X x3 (gpu_lidar) ================= -->
+
+  <!-- ToF central: mira al frente -->
+  <link name="tof_center_link">
+    <inertial>
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
+    </inertial>
+  </link>
+  <joint name="tof_center_link_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="tof_center_link" />
+    <origin xyz="0.095 0.003 0.076" rpy="0 0 0" />
+  </joint>
+
+  <gazebo reference="tof_center_link">
+    <sensor name="tof_center" type="gpu_lidar">
+      <topic>/tof/center/scan</topic>
+      <gz_frame_id>tof_center_link</gz_frame_id>
+      <update_rate>20</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>9</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.2356</min_angle>
+            <max_angle>0.2356</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.04</min>
+          <max>4.0</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0</mean>
+          <stddev>0.005</stddev>
+        </noise>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+  <!-- ToF izquierdo: girado 30° a la izquierda -->
+  <link name="tof_left_link">
+    <inertial>
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
+    </inertial>
+  </link>
+  <joint name="tof_left_link_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="tof_left_link" />
+    <origin xyz="0.081 0.050 0.075" rpy="0 0 0.5236" />
+  </joint>
+
+  <gazebo reference="tof_left_link">
+    <sensor name="tof_left" type="gpu_lidar">
+      <topic>/tof/left/scan</topic>
+      <gz_frame_id>tof_left_link</gz_frame_id>
+      <update_rate>20</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>9</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.2356</min_angle>
+            <max_angle>0.2356</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.04</min>
+          <max>4.0</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0</mean>
+          <stddev>0.005</stddev>
+        </noise>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+  <!-- ToF derecho: girado 30° a la derecha -->
+  <link name="tof_right_link">
+    <inertial>
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
+    </inertial>
+  </link>
+  <joint name="tof_right_link_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="tof_right_link" />
+    <origin xyz="0.083 -0.045 0.076" rpy="0 0 -0.5236" />
+  </joint>
+
+  <gazebo reference="tof_right_link">
+    <sensor name="tof_right" type="gpu_lidar">
+      <topic>/tof/right/scan</topic>
+      <gz_frame_id>tof_right_link</gz_frame_id>
+      <update_rate>20</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>9</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.2356</min_angle>
+            <max_angle>0.2356</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.04</min>
+          <max>4.0</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0</mean>
+          <stddev>0.005</stddev>
+        </noise>
+      </lidar>
+    </sensor>
+  </gazebo>
+
 
 </robot>
