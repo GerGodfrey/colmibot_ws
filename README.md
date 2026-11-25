@@ -879,3 +879,154 @@ colmibotbasics:
 ### Problemas generales
 - **`tf2_echo` no imprimía nada dentro de un ciclo `for` con `timeout` y `grep`**: cuando la salida de un programa va a otro (`|`), se acumula en un *buffer* y se pierde si el programa se corta antes de llenarlo.
   **Solución:** correr `tf2_echo` directamente, uno por uno, y cortarlo con `Ctrl+C` (o forzar salida línea por línea con `stdbuf -oL`).
+
+## Escenarios
+
+### Escenario 1
+
+#### Descripción del escenario
+
+Entorno de simulación ligero en Gazebo (`escenario1.sdf`) que representa un almacén de $16 \times 10\text{ m}$ con pasillos de $2\text{ m}$ de ancho, diseñado con primitivas geométricas estáticas para optimizar el consumo de memoria y gráficos integrados.
+
+- **Área de almacenamiento:** 16 grupos de cajas apiladas en dos niveles ($60\text{ cm}$ de altura) distribuidos en una franja superior (5 grupos), una inferior (6 grupos), una izquierda (3 grupos) y dos islas centrales (2 grupos cada una), montados sobre pallets comerciales sólidos de $1.20 \times 0.80 \times 0.14\text{ m}$.
+- **Zona de empaquetamiento ($7 \times 4\text{ m}$):** Dos bandas transportadoras paralelas, un arco de emplayado con rollo de film, una estación etiquetadora, una mesa final de clasificación y una tarima de recepción.
+- **Robot (Colmibot):** Aparece en la esquina superior derecha ($X = 6.5\text{ m}, Y = 4.5\text{ m}$) con orientación inicial de $-90^\circ$ ($-1.5708\text{ rad}$) apuntando hacia el interior del almacén, con cámara frontal, IMU y 3 sensores ToF activos.
+
+#### Ejecución del escenario
+
+1. Compilar el paquete con enlaces simbólicos y cargar el entorno:
+
+   ```bash
+   cd ~/colmibot_ws
+   colcon build --packages-select robot_description --symlink-install
+   source install/setup.bash
+   ```
+
+2. Lanzar la simulación completa (mundo, robot, sensores y puente ROS 2):
+
+   ```bash
+   ros2 launch robot_description gazebo_escenario1.launch.py
+   ```
+
+3. *(Opcional)* Visualizar la cámara del robot en otra terminal:
+
+   ```bash
+   ros2 run rqt_image_view rqt_image_view
+   ```
+
+   *(Seleccionar el tópico `/camera/image_raw`)*.
+
+#### Problemas y soluciones
+
+- **Fallo de renderizado de sensores (`ogre`):** El plugin de sensores de Gazebo Sim requiere `ogre2` para publicar imágenes y datos LiDAR/ToF; se configuró `<render_engine>ogre2</render_engine>` dentro de `escenario1.sdf`.
+- **Alto consumo de recursos por mallas externas:** Importar modelos detallados como `model://pallet` sobrecarga la GPU integrada; se sustituyeron los pallets y la maquinaria por primitivas `<box>` y `<cylinder>` estáticas.
+- **Mallas del robot no encontradas con `--symlink-install`:** Gazebo no resolvía `package://robot_description/meshes/...` al usar enlaces simbólicos (`Unable to find file with URI`). Se solucionó en `gazebo_escenario1.launch.py` reemplazando dinámicamente `package://robot_description` por `file://{pkg}` al leer el URDF.
+- **Orientación inicial hacia la pared:** El robot aparecía mirando hacia los pallets superiores; se ajustó el ángulo de orientación inicial.
+
+## Rutas
+
+### Ruta escenario 1
+
+#### Funcionamiento
+
+Nodo de navegación autónoma (`ruta_escenario1.py`) en el paquete `colmibotbasics` que guía al robot a través de los pasillos del almacén mediante una máquina de estados finitos (`GIRAR` $\rightarrow$ `PAUSA` $\rightarrow$ `AVANZAR`) publicando comandos de velocidad en `/cmd_vel`.
+
+- **Waypoints:** Lista de 9 coordenadas $(X, Y)$ en metros alineadas con el centro de cada pasillo, partiendo desde el almacén `(6.5, 4.5)`, recorriendo el pasillo superior, el pasillo izquierdo, los dos pasillos entre islas, un retorno breve en el pasillo inferior y la salida en `(7.2, -3.05)`. En cada punto el robot gira sobre su propio eje antes de avanzar para mantener la cámara frontal apuntando siempre hacia el frente.
+- **Fusión IMU + Odometría:** El rumbo real (`yaw`) se lee directamente desde `/imu` para evitar el error por patinaje de ruedas, mientras que `/odom` aporta únicamente el desplazamiento lineal incremental ($\Delta d$), el cual se proyecta sobre el ángulo de la IMU para calcular la posición global $(X, Y)$ en tiempo real.
+- **Preparación para sensores:** Incluye suscripciones activas a `/tof/center/scan` y `/camera/image_raw` con una bandera de pausa (`obstaculo_detectado`) lista para integrar detección de personas u obstáculos.
+
+#### Diagrama de la máquina de estados y flujo de variables
+
+```text
++-------------------------------------------------------------------+
+| ENTRADAS CONTINUAS (Callbacks de sensores a /odom e /imu)         |
+|  * /imu  ---> yaw (orientación real sin derrape)                  |
+|  * /odom ---> paso (Δd) ---> proyectado con yaw ---> (x, y)       |
+|  * /tof  ---> distancia_min_tof ---> obstaculo_detectado          |
++---------------------------------+---------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+| BUCLE DE CONTROL (20 Hz)                                          |
+|  1. Verifica: ¿obstaculo_detectado == True?                       |
+|     └─► [SÍ]: Publica cmd = Twist(0, 0) y detiene el ciclo.       |
+|     └─► [NO]: Toma objetivo = waypoints[indice_wp] y calcula:     |
+|               * distancia = hypot(objetivo_x - x, objetivo_y - y) |
+|               * error_angular = angulo_deseado - yaw              |
++---------------------------------+---------------------------------+
+                                  |
+                                  v
+                     +-------------------------+
+                     |      estado = GIRAR     |◄--------------------+
+                     |  linear.x  = 0.0        |                     |
+                     |  angular.z = Kp * error |                     |
+                     +------------+------------+                     |
+                                  |                                  |
+                      |error_angular| <= 0.025 rad                   |
+                                  v                                  |
+                     +-------------------------+                     |
+                     |      estado = PAUSA     |                     |
+                     |  linear.x  = 0.0        |                     |
+                     |  angular.z = 0.0        |                     |
+                     |  contador_pausa: 5 -> 0 |                     |
+                     +------------+------------+                     |
+                                  |                                  |
+                        contador_pausa == 0                          |
+                                  v                                  |
+                     +-------------------------+                     |
+                     |     estado = AVANZAR    |                     |
+                     |  linear.x  = 0.14..0.30 |                     |
+                     |  angular.z = corrección |                     |
+                     +------+-----------+------+                     |
+                            |           |                            |
+   |error_angular| > 0.21   |           |  distancia <= 0.07 m       |
+   (desvío en tramo largo)  |           |  (llegó al waypoint)       |
+            +---------------+           v                            |
+            |              +-------------------------+               |
+            +-------------►|   indice_wp += 1        |               |
+                           +------+-----------+------+               |
+                                  |           |                      |
+       indice_wp < len(waypoints) |           | indice_wp >= total   |
+       (quedan puntos)            |           | (ruta terminada)     |
+            +---------------------+           v                      |
+            |                      +-------------------------+       |
+            +----------------------|       estado = FIN      |       |
+                                   |  linear.x  = 0.0        |       |
+                                   |  angular.z = 0.0        |       |
+                                   +-------------------------+       |
+                                                                     |
+                                   (Publica Twist en /cmd_vel) ------+
+
+#### Ejecución y réplica
+
+1. Registrar el ejecutable en `src/colmibotbasics/setup.py` dentro de `console_scripts`:
+
+   ```python
+   'ruta_escenario1 = colmibotbasics.ruta_escenario1:main',
+   ```
+
+2. Compilar el espacio de trabajo y cargar el entorno:
+
+   ```bash
+   cd ~/colmibot_ws
+   colcon build --packages-select robot_description colmibotbasics
+   source install/setup.bash
+   ```
+
+3. Lanzar el escenario en la **Terminal 1**:
+
+   ```bash
+   ros2 launch robot_description gazebo_escenario1.launch.py
+   ```
+
+4. Ejecutar la ruta en la **Terminal 2**:
+
+   ```bash
+   source ~/colmibot_ws/install/setup.bash
+   ros2 run colmibotbasics ruta_escenario1
+   ```
+
+#### Problemas y soluciones
+
+- **Desviación progresiva de la trayectoria:** El deslizamiento de las ruedas en los giros introducía error en el ángulo de `/odom`, desviando al robot hacia la zona de empaquetamiento. Se resolvió sustituyendo el `yaw` de odometría por la lectura directa de `/imu` y reduciendo la velocidad angular máxima a `0.55 rad/s` con una pausa de estabilización de `0.25 s` tras cada giro.
+- **Bloqueo de GUI y fallos de carga con `--symlink-install`:** Los enlaces simbólicos y procesos residuales de Gazebo provocaban conflictos de rutas en las mallas y bloqueos al abrir la interfaz. Se solucionó limpiando procesos previos (`pkill -9 -f "gz sim"`), eliminando `build/` e `install/` y compilando sin `--symlink-install`.
