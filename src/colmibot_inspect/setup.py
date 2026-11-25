@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tof_to_range = colmibot_inspect.tof_to_range:main',
+            'safety_stop = colmibot_inspect.safety_stop:main'
         ],
     },
 )
