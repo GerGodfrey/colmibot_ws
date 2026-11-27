@@ -29,6 +29,7 @@ setup(
         'colmibot_controller = colmibotbasics.colmibot_controller:main',
         'box_detector = colmibotbasics.box_detector_node:main',
         'ruta_escenario1 = colmibotbasics.ruta_escenario1:main',
+        'ruta_escenarioLab = colmibotbasics.ruta_escenarioLab:main',
     ],
 },
 )
