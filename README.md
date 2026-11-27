@@ -894,7 +894,7 @@ Entorno de simulación ligero en Gazebo (`escenario1.sdf`) que representa un alm
 
 #### Ejecución del escenario
 
-1. Compilar el paquete con enlaces simbólicos y cargar el entorno:
+1. **Compilar el paquete con enlaces simbólicos y cargar el entorno:**
 
    ```bash
    cd ~/colmibot_ws
@@ -902,26 +902,71 @@ Entorno de simulación ligero en Gazebo (`escenario1.sdf`) que representa un alm
    source install/setup.bash
    ```
 
-2. Lanzar la simulación completa (mundo, robot, sensores y puente ROS 2):
+2. **Lanzar la simulación completa (mundo, robot, sensores y puente ROS 2):**
 
    ```bash
    ros2 launch robot_description gazebo_escenario1.launch.py
    ```
 
-3. *(Opcional)* Visualizar la cámara del robot en otra terminal:
+3. **(Opcional) Visualizar la cámara del robot en otra terminal:**
 
    ```bash
    ros2 run rqt_image_view rqt_image_view
    ```
 
-   *(Seleccionar el tópico `/camera/image_raw`)*.
+   Seleccionar el tópico `/camera/image_raw`.
+
+#### Notas
+
+Este escenario puede servir como referencia para la simulación de un almacén, aunque no puede ser replicado físicamente.
 
 #### Problemas y soluciones
 
-- **Fallo de renderizado de sensores (`ogre`):** El plugin de sensores de Gazebo Sim requiere `ogre2` para publicar imágenes y datos LiDAR/ToF; se configuró `<render_engine>ogre2</render_engine>` dentro de `escenario1.sdf`.
+- **Fallo de renderizado de sensores (ogre):** El plugin de sensores de Gazebo Sim requiere ogre2 para publicar imágenes y datos LiDAR/ToF; se configuró `<render_engine>ogre2</render_engine>` dentro de `escenario1.sdf`.
 - **Alto consumo de recursos por mallas externas:** Importar modelos detallados como `model://pallet` sobrecarga la GPU integrada; se sustituyeron los pallets y la maquinaria por primitivas `<box>` y `<cylinder>` estáticas.
 - **Mallas del robot no encontradas con `--symlink-install`:** Gazebo no resolvía `package://robot_description/meshes/...` al usar enlaces simbólicos (`Unable to find file with URI`). Se solucionó en `gazebo_escenario1.launch.py` reemplazando dinámicamente `package://robot_description` por `file://{pkg}` al leer el URDF.
 - **Orientación inicial hacia la pared:** El robot aparecía mirando hacia los pallets superiores; se ajustó el ángulo de orientación inicial.
+
+### Escenario Lab
+
+#### Descripción del escenario
+
+Entorno de prueba acotado en Gazebo (`escenarioLab.sdf`) de $6.0 \times 1.0\text{ m}$ totales ($5.0\text{ m}$ de área de almacenamiento y $1.0\text{ m}$ de almacén de robots), diseñado a escala real para validar rutinas de inspección de mercancía y permitir su réplica física en laboratorio.
+
+- **Área de almacenamiento ($5.0 \times 0.50\text{ m}$):** Dos grupos de cajas de $1.0\text{ m}$ de largo apiladas en dos niveles ($60\text{ cm}$ de altura, compuestas por cajas de $30 \times 30 \times 30\text{ cm}$ y $40 \times 30 \times 30\text{ cm}$) colocadas directamente al ras del piso (sin pallets) contra la pared norte ($Y = +0.50\text{ m}$) y separadas $1.50\text{ m}$ entre sí. A la derecha de cada grupo se ubica un poste gris de referencia de $30 \times 20 \times 50\text{ cm}$ sin obstruir la vista frontal.
+- **Pasillo de circulación ($6.0 \times 0.50\text{ m}$) y almacén de robots ($1.0 \times 0.50\text{ m}$):** Delimitados lógicamente sin muros perimetrales extra ni marcas de color en el suelo, permitiendo ampliar el ancho del pasillo hacia $-Y$ en futuras iteraciones sin recalcular las coordenadas de las estaciones.
+- **Robot (Colmibot):** Aparece exactamente en el centro del área de almacén de robots ($X = 5.50\text{ m}, Y = 0.25\text{ m}$) con orientación inicial de $-90^\circ$ ($-1.5708\text{ rad}$) mirando hacia la salida al pasillo.
+
+#### Ejecución del escenario
+
+1. **Compilar el paquete con enlaces simbólicos y cargar el entorno:**
+
+   ```bash
+   cd ~/colmibot_ws
+   colcon build --packages-select robot_description --symlink-install
+   source install/setup.bash
+   ```
+
+2. **Lanzar la simulación completa (mundo, robot, sensores y puente ROS 2):**
+
+   ```bash
+   ros2 launch robot_description gazebo_escenarioLab.launch.py
+   ```
+
+3. **(Opcional) Inspeccionar únicamente el mundo en Gazebo sin lanzar el robot:**
+
+   ```bash
+   gz sim ~/colmibot_ws/src/robot_description/worlds/escenarioLab.sdf
+   ```
+
+#### Notas
+
+A diferencia del Escenario 1, este entorno fue dimensionado ($6 \times 1\text{ m}$) para ser replicable físicamente en laboratorio y sirve como banco de pruebas para algoritmos de visión e inspección antes de integrarlos en el almacén completo.
+
+#### Problemas y soluciones
+
+- **Restricción de espacio en pasillo estrecho ($50\text{ cm}$):** Dado el ancho del Colmibot ($\sim 24\text{ cm}$), el margen lateral disponible es de aproximadamente $13\text{ cm}$ por lado. Se eliminaron paredes laterales y zonas pintadas en el suelo para evitar obstrucciones visuales y facilitar una eventual ampliación del pasillo hacia $-Y$.
+- **Postes de referencia sin oclusión:** Los postes grises de $30 \times 20 \times 50\text{ cm}$ se ubicaron lateralmente al final de cada grupo de cajas ($X = 1.15\text{ m}$ y $X = 3.65\text{ m}$, $Y = 0.12\text{ m}$) dentro de la franja de almacenamiento para no invadir el pasillo ni tapar las cajas durante la captura de imágenes.
 
 ## Rutas
 
@@ -929,15 +974,15 @@ Entorno de simulación ligero en Gazebo (`escenario1.sdf`) que representa un alm
 
 #### Funcionamiento
 
-Nodo de navegación autónoma (`ruta_escenario1.py`) en el paquete `colmibotbasics` que guía al robot a través de los pasillos del almacén mediante una máquina de estados finitos (`GIRAR` $\rightarrow$ `PAUSA` $\rightarrow$ `AVANZAR`) publicando comandos de velocidad en `/cmd_vel`.
+Nodo de navegación autónoma (`ruta_escenario1.py`) en el paquete `colmibotbasics` que guía al robot a través de los pasillos del almacén mediante una máquina de estados finitos (GIRAR $\rightarrow$ PAUSA $\rightarrow$ AVANZAR) publicando comandos de velocidad en `/cmd_vel`.
 
-- **Waypoints:** Lista de 9 coordenadas $(X, Y)$ en metros alineadas con el centro de cada pasillo, partiendo desde el almacén `(6.5, 4.5)`, recorriendo el pasillo superior, el pasillo izquierdo, los dos pasillos entre islas, un retorno breve en el pasillo inferior y la salida en `(7.2, -3.05)`. En cada punto el robot gira sobre su propio eje antes de avanzar para mantener la cámara frontal apuntando siempre hacia el frente.
-- **Fusión IMU + Odometría:** El rumbo real (`yaw`) se lee directamente desde `/imu` para evitar el error por patinaje de ruedas, mientras que `/odom` aporta únicamente el desplazamiento lineal incremental ($\Delta d$), el cual se proyecta sobre el ángulo de la IMU para calcular la posición global $(X, Y)$ en tiempo real.
+- **Waypoints:** Lista de 9 coordenadas $(X, Y)$ en metros alineadas con el centro de cada pasillo, partiendo desde el almacén (6.5, 4.5), recorriendo el pasillo superior, el pasillo izquierdo, los dos pasillos entre islas, un retorno breve en el pasillo inferior y la salida en (7.2, -3.05). En cada punto el robot gira sobre su propio eje antes de avanzar para mantener la cámara frontal apuntando siempre hacia el frente.
+- **Fusión IMU + Odometría:** El rumbo real (yaw) se lee directamente desde `/imu` para evitar el error por patinaje de ruedas, mientras que `/odom` aporta únicamente el desplazamiento lineal incremental ($\Delta d$), el cual se proyecta sobre el ángulo de la IMU para calcular la posición global $(X, Y)$ en tiempo real.
 - **Preparación para sensores:** Incluye suscripciones activas a `/tof/center/scan` y `/camera/image_raw` con una bandera de pausa (`obstaculo_detectado`) lista para integrar detección de personas u obstáculos.
 
 #### Diagrama de la máquina de estados y flujo de variables
 
-```text
+```plaintext
 +-------------------------------------------------------------------+
 | ENTRADAS CONTINUAS (Callbacks de sensores a /odom e /imu)         |
 |  * /imu  ---> yaw (orientación real sin derrape)                  |
@@ -983,29 +1028,30 @@ Nodo de navegación autónoma (`ruta_escenario1.py`) en el paquete `colmibotbasi
    (desvío en tramo largo)  |           |  (llegó al waypoint)       |
             +---------------+           v                            |
             |              +-------------------------+               |
-            +-------------►|   indice_wp += 1        |               |
+            +------------->|   indice_wp += 1        |               |
                            +------+-----------+------+               |
                                   |           |                      |
        indice_wp < len(waypoints) |           | indice_wp >= total   |
        (quedan puntos)            |           | (ruta terminada)     |
             +---------------------+           v                      |
-            |                      +-------------------------+       |
-            +----------------------|       estado = FIN      |       |
-                                   |  linear.x  = 0.0        |       |
-                                   |  angular.z = 0.0        |       |
-                                   +-------------------------+       |
+            |                     +-------------------------+       |
+            +-------------------->|       estado = FIN      |       |
+                                  |  linear.x  = 0.0        |       |
+                                  |  angular.z = 0.0        |       |
+                                  +-------------------------+       |
                                                                      |
                                    (Publica Twist en /cmd_vel) ------+
+```
 
 #### Ejecución y réplica
 
-1. Registrar el ejecutable en `src/colmibotbasics/setup.py` dentro de `console_scripts`:
+1. **Registrar el ejecutable** en `src/colmibotbasics/setup.py` dentro de `console_scripts`:
 
    ```python
    'ruta_escenario1 = colmibotbasics.ruta_escenario1:main',
    ```
 
-2. Compilar el espacio de trabajo y cargar el entorno:
+2. **Compilar el espacio de trabajo y cargar el entorno:**
 
    ```bash
    cd ~/colmibot_ws
@@ -1013,20 +1059,157 @@ Nodo de navegación autónoma (`ruta_escenario1.py`) en el paquete `colmibotbasi
    source install/setup.bash
    ```
 
-3. Lanzar el escenario en la **Terminal 1**:
+3. **Lanzar el escenario en la Terminal 1:**
 
    ```bash
    ros2 launch robot_description gazebo_escenario1.launch.py
    ```
 
-4. Ejecutar la ruta en la **Terminal 2**:
+4. **Ejecutar la ruta en la Terminal 2:**
 
    ```bash
    source ~/colmibot_ws/install/setup.bash
    ros2 run colmibotbasics ruta_escenario1
    ```
 
+#### Notas
+
+Este escenario puede servir como referencia para la simulación de un almacén, aunque no puede ser replicado físicamente.
+
 #### Problemas y soluciones
 
-- **Desviación progresiva de la trayectoria:** El deslizamiento de las ruedas en los giros introducía error en el ángulo de `/odom`, desviando al robot hacia la zona de empaquetamiento. Se resolvió sustituyendo el `yaw` de odometría por la lectura directa de `/imu` y reduciendo la velocidad angular máxima a `0.55 rad/s` con una pausa de estabilización de `0.25 s` tras cada giro.
+- **Desviación progresiva de la trayectoria:** El deslizamiento de las ruedas en los giros introducía error en el ángulo de `/odom`, desviando al robot hacia la zona de empaquetamiento. Se resolvió sustituyendo el yaw de odometría por la lectura directa de `/imu` y reduciendo la velocidad angular máxima a 0.55 rad/s con una pausa de estabilización de 0.25 s tras cada giro.
 - **Bloqueo de GUI y fallos de carga con `--symlink-install`:** Los enlaces simbólicos y procesos residuales de Gazebo provocaban conflictos de rutas en las mallas y bloqueos al abrir la interfaz. Se solucionó limpiando procesos previos (`pkill -9 -f "gz sim"`), eliminando `build/` e `install/` y compilando sin `--symlink-install`.
+
+### Ruta escenario Lab
+
+#### Funcionamiento
+
+Nodo de navegación e inspección autónoma (`ruta_escenarioLab.py`) en el paquete `colmibotbasics` que amplía la máquina de estados finitos (GIRAR $\rightarrow$ PAUSA $\rightarrow$ AVANZAR $\rightarrow$ GIRAR_A_OBJETIVO $\rightarrow$ TAREA $\rightarrow$ FIN) para detenerse frente a estaciones de almacenamiento, apuntar la cámara frontal hacia los grupos de cajas, ejecutar una tarea temporizada y regresar a su posición inicial.
+
+- **Waypoints con objetivos de inspección:** Lista de 6 tuplas con formato `(wp_x, wp_y, objetivo_xy, ticks_tarea)`:
+  1. Sale del almacén hacia el centro del pasillo (5.50, -0.25).
+  2. Avanza al centro del Grupo 2 de cajas (3.00, -0.25), rota hacia (3.00, 0.35) y permanece detenido 3.0 s (60 ciclos a 20 Hz).
+  3. Avanza al centro del Grupo 1 de cajas (0.50, -0.25), rota hacia (0.50, 0.35) y permanece detenido 3.0 s.
+  4. Llega al extremo del pasillo (0.25, -0.25) dejando margen de giro seguro.
+  5. Regresa en línea recta hasta la entrada del almacén (5.50, -0.25) sin detenerse en las cajas.
+  6. Entra al almacén (5.50, 0.25) y gira apuntando hacia (5.50, -1.00) para quedar en la misma pose inicial ($-90^\circ$).
+- **Cálculo dinámico de orientación (`atan2`):** En el estado `GIRAR_A_OBJETIVO`, el robot calcula automáticamente el ángulo hacia la coordenada $(obj_x, obj_y)$ del objeto mediante $\text{atan2}(\text{obj}_y - y,\; \text{obj}_x - x)$, permitiendo reutilizar el mismo controlador en escenarios con estantes en distintas orientaciones.
+- **Ajuste de precisión para pasillo estrecho:** Se redujo la tolerancia de llegada a 0.035 m ($3.5\text{ cm}$) y la velocidad lineal al rango 0.10..0.25 m/s para centrar al robot frente a cada grupo de cajas antes de rotar.
+
+#### Diagrama de la máquina de estados y flujo de variables
+
+```plaintext
++-------------------------------------------------------------------+
+| ENTRADAS CONTINUAS (Callbacks de sensores a /odom e /imu)         |
+|  * /imu  ---> yaw (calibrado con imu_yaw_inicial + delta_yaw)     |
+|  * /odom ---> paso (Δd) ---> proyectado con yaw ---> (x, y)       |
+|  * /tof  ---> distancia_min_tof ---> obstaculo_detectado          |
++---------------------------------+---------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+| BUCLE DE CONTROL (20 Hz)                                          |
+|  1. Verifica: ¿obstaculo_detectado == True?                       |
+|     └─► [SÍ]: Publica cmd = Twist(0, 0) y detiene el ciclo.       |
+|     └─► [NO]: Lee (objetivo_x, objetivo_y, caja_xy, ticks_tarea)  |
++---------------------------------+---------------------------------+
+                                  |
+                                  v
+                     +-------------------------+
+                     |      estado = GIRAR     |◄--------------------+
+                     |  linear.x  = 0.0        |                     |
+                     |  angular.z = Kp * error |                     |
+                     +------------+------------+                     |
+                                  |                                  |
+                      |error_angular| <= 0.025 rad                   |
+                                  v                                  |
+                     +-------------------------+                     |
+                     |      estado = PAUSA     |                     |
+                     |  contador_pausa: 5 -> 0 |                     |
+                     +------------+------------+                     |
+                                  |                                  |
+                        contador_pausa == 0                          |
+                                  v                                  |
+                     +-------------------------+                     |
+                     |     estado = AVANZAR    |                     |
+                     |  linear.x  = 0.10..0.25 |                     |
+                     |  angular.z = corrección |                     |
+                     +------+-----------+------+                     |
+                            |           |                            |
+   |error_angular| > 0.21   |           |  distancia <= 0.035 m      |
+            +---------------+           v                            |
+            |              +-------------------------+               |
+            +------------->|  ¿caja_xy is not None?  |               |
+                           +------+-----------+------+               |
+                                  |           |                      |
+                             [NO] |           | [SÍ]                 |
+            +---------------------+           v                      |
+            |                     +-------------------------+       |
+            |                     | estado=GIRAR_A_OBJETIVO |       |
+            |                     | ang = atan2(dy_obj,dx)  |       |
+            |                     +------------+------------+       |
+            |                                  |                    |
+            |                      |error_obj| <= 0.025 rad         |
+            |                                  v                    |
+            |                     +-------------------------+       |
+            |                     |      estado = TAREA     |       |
+            |                     |  contador_tarea: N -> 0 |       |
+            |                     +------------+------------+       |
+            |                                  |                    |
+            |                        contador_tarea == 0            |
+            |                                  |                    |
+            +-----------------+----------------+                    |
+                              v                                      |
+                 +-------------------------+                         |
+                 |   indice_wp += 1        |                         |
+                 +------+-----------+------+                         |
+                        |           |                                |
+       indice_wp < total|           | indice_wp >= total             |
+            +-----------+           v                                |
+            |            +-------------------------+                 |
+            |            |       estado = FIN      |                 |
+            |            |  linear.x  = 0.0        |                 |
+            |            |  angular.z = 0.0        |                 |
+            |            +-------------------------+                 |
+            |                                                        |
+            +----------------------(Publica Twist en /cmd_vel) ------+
+```
+
+#### Ejecución y réplica
+
+1. **Registrar el ejecutable** en `src/colmibotbasics/setup.py` dentro de `console_scripts`:
+
+   ```python
+   'ruta_escenarioLab = colmibotbasics.ruta_escenarioLab:main',
+   ```
+
+2. **Compilar el espacio de trabajo y cargar el entorno:**
+
+   ```bash
+   cd ~/colmibot_ws
+   colcon build --packages-select robot_description colmibotbasics
+   source install/setup.bash
+   ```
+
+3. **Lanzar el escenario en la Terminal 1:**
+
+   ```bash
+   ros2 launch robot_description gazebo_escenarioLab.launch.py
+   ```
+
+4. **Ejecutar la ruta en la Terminal 2:**
+
+   ```bash
+   source ~/colmibot_ws/install/setup.bash
+   ros2 run colmibotbasics ruta_escenarioLab
+   ```
+
+#### Notas
+
+La arquitectura de estados implementada en este nodo (`GIRAR_A_OBJETIVO` + `TAREA`) es directamente extrapolable al Escenario 1 en futuras iteraciones sin modificar el controlador, requiriendo únicamente actualizar los waypoints de los pasillos y las coordenadas $(X, Y)$ de cada grupo de cajas a inspeccionar.
+
+#### Problemas y soluciones
+
+- **Reutilización de orientación en escenarios complejos:** Hardcodear ángulos fijos de inspección obligaría a recalcular manualmente hacia dónde voltear en cada pasillo; al pasar las coordenadas globales `(obj_x, obj_y)` del objeto y calcular el ángulo con `math.atan2`, el robot apunta su cámara con precisión desde cualquier dirección de llegada.
+- **Centrado frente a las cajas en pasillo de $50\text{ cm}$:** Con la tolerancia de llegada de 0.07 m usada en pasillos anchos, el robot podía detenerse ligeramente desfasado del eje central de las cajas; se ajustó el umbral a 0.035 m y la velocidad lineal mínima a 0.10 m/s para garantizar un encuadre centrado antes de iniciar el estado `TAREA`.
