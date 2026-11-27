@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <model name="obstaculo_regreso">
+    <static>true</static>
+    <link name="caja_obstaculo">
+      <pose>2.50 -0.25 0.20 0 0 0</pose>
+      <collision name="col">
+        <geometry><box><size>0.35 0.35 0.40</size></box></geometry>
+      </collision>
+      <visual name="vis">
+        <cast_shadows>false</cast_shadows>
+        <geometry><box><size>0.35 0.35 0.40</size></box></geometry>
+        <material>
+          <ambient>0.80 0.15 0.15 1</ambient>
+          <diffuse>0.85 0.20 0.20 1</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

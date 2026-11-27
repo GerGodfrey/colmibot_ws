@@ -1213,3 +1213,40 @@ La arquitectura de estados implementada en este nodo (`GIRAR_A_OBJETIVO` + `TARE
 
 - **Reutilización de orientación en escenarios complejos:** Hardcodear ángulos fijos de inspección obligaría a recalcular manualmente hacia dónde voltear en cada pasillo; al pasar las coordenadas globales `(obj_x, obj_y)` del objeto y calcular el ángulo con `math.atan2`, el robot apunta su cámara con precisión desde cualquier dirección de llegada.
 - **Centrado frente a las cajas en pasillo de $50\text{ cm}$:** Con la tolerancia de llegada de 0.07 m usada en pasillos anchos, el robot podía detenerse ligeramente desfasado del eje central de las cajas; se ajustó el umbral a 0.035 m y la velocidad lineal mínima a 0.10 m/s para garantizar un encuadre centrado antes de iniciar el estado `TAREA`.
+
+## Obstáculos
+
+Para validar el comportamiento reactivo del Colmibot ante interrupciones en el corredor sin comprometer el rendimiento de Gazebo (*Real Time Factor* estable en ~40–45%), los obstáculos se diseñaron en archivos SDF independientes fuera de `escenarioLab.sdf`, utilizando primitivas geométricas ligeras con colisión física y sombras dinámicas desactivadas (`<cast_shadows>false</cast_shadows>`).
+
+### Modelos implementados
+
+* **Persona en movimiento (`persona_geometrica.sdf`):** Cilindro vertical (`0.10 m` de radio × `1.50 m` de altura) controlado mediante el plugin `VelocityControl`. Aparece frente al primer poste (`X = 3.65 m, Y = -0.50 m`), cruza perpendicularmente sobre el eje $Y$ a `0.15 m/s` hasta detenerse en el centro del pasillo (`Y = -0.25 m`), permanece unos segundos bloqueando la ruta para verificar el frenado automático mediante los sensores ToF, regresa a su punto de origen y se elimina de la simulación mediante el nodo `remove` de `ros_gz_sim`.
+* **Obstáculo fijo de regreso (`obstaculo_regreso.sdf`):** Caja estática (`0.35 × 0.35 × 0.40 m`, `<static>true</static>`) con colisión física que aparece en el centro del pasillo (`X = 2.50 m, Y = -0.25 m`) 5 segundos después de que la persona desaparece. Su función es bloquear de forma permanente el corredor para validar la detención segura y la transición a teleoperación manual.
+
+### Secuencia temporal y calibración
+
+La aparición, movimiento y eliminación de los modelos se gestiona mediante bloques `TimerAction` en `gazebo_escenarioLab.launch.py`, contabilizados en segundos de reloj real desde el lanzamiento (incluyendo un margen inicial de `15 s` para la carga de la interfaz gráfica):
+
+| Tiempo real (`period`) | Evento en simulación |
+| :--- | :--- |
+| `15.0 s` | Inserción de `persona_geometrica` en `(3.65, -0.50)` avanzando hacia `+Y`. |
+| `19.5 s` | Detención de la persona en el centro del pasillo (`Y ≈ -0.25`). |
+| `25.0 s` | Retorno de la persona hacia `-Y` (`-0.15 m/s`). |
+| `29.5 s` – `30.0 s` | Detención en el punto de origen y eliminación completa del modelo en Gazebo. |
+| `35.0 s` | Inserción de `obstaculo_regreso` en `(2.50, -0.25)` de forma permanente. |
+
+> **Nota de calibración para corrida completa:** Los tiempos anteriores corresponden a una secuencia rápida de validación. Dado que la simulación corre a un RTF aproximado de `40–45%` y el robot completa la ida e inicia el regreso alrededor de los `46.7 s` de *Sim Time* (`~111 s` en tiempo real desde que arranca el nodo de navegación), para evaluar la ruta completa deberá incrementarse el parámetro `period` de `crear_obstaculo` a `~115–120 s` para que la caja aparezca exclusivamente durante el trayecto de vuelta.
+
+### Ejecución con y sin obstáculos
+
+El archivo `gazebo_escenarioLab.launch.py` incluye el argumento booleano `obstaculos` (`true` por defecto) para alternar entre pruebas limpias de navegación/inspección y pruebas con obstrucciones:
+
+* **Lanzamiento con obstáculos activos (por defecto):**
+  ```bash
+  ros2 launch robot_description gazebo_escenarioLab.launch.py
+  ```
+
+* **Lanzamiento sin obstáculos (corredor despejado):**
+  ```bash
+  ros2 launch robot_description gazebo_escenarioLab.launch.py obstaculos:=false
+  ```
